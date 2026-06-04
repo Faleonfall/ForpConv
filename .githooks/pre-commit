@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+staged_files="$(mktemp)"
+staged_deletions="$(mktemp)"
+trap 'rm -f "$staged_files" "$staged_deletions"' EXIT
+
+git diff --cached --name-only -z --diff-filter=d > "$staged_files"
+git diff --cached --name-only -z --diff-filter=D > "$staged_deletions"
+
+if [ -s "$staged_files" ]; then
+  xargs -0 npx prettier --write --ignore-unknown -- < "$staged_files"
+fi
+
+npm run lint
+
+if [ -s "$staged_files" ]; then
+  xargs -0 git add -- < "$staged_files"
+fi
+
+if [ -s "$staged_deletions" ]; then
+  xargs -0 git rm -q --cached --ignore-unmatch -- < "$staged_deletions"
+fi

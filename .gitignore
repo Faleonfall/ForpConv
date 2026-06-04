@@ -1,0 +1,73 @@
+# ------------------------------
+# Dependencies
+# ------------------------------
+node_modules/
+
+# ------------------------------
+# Build output / caches
+# ------------------------------
+dist/
+build/
+out/
+tmp/
+temp/
+.cache/
+.nx/
+.eslintcache
+*.tsbuildinfo
+coverage/
+
+# ------------------------------
+# Logs
+# ------------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------------
+# Environment / secrets
+# ------------------------------
+.env
+.env.*
+!.env.example
+!.env.sample
+deploy/env.production
+
+# Private keys / certs / credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.kdbx
+*.secrets*
+
+# ------------------------------
+# Database / local runtime files
+# ------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# ------------------------------
+# Package manager artifacts
+# ------------------------------
+.yarn/
+
+# ------------------------------
+# Tooling and IDE
+# ------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ------------------------------
+# Optional local overrides
+# ------------------------------
+*.local
