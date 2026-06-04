@@ -617,8 +617,8 @@ const handleConvert = (): void => {
                 </span>
                 <input
                   v-else
-                  v-focus
                   v-model.number="fadeInDuration"
+                  v-focus
                   type="number"
                   step="0.01"
                   min="0"
@@ -656,8 +656,8 @@ const handleConvert = (): void => {
                 </span>
                 <input
                   v-else
-                  v-focus
                   v-model.number="fadeOutDuration"
+                  v-focus
                   type="number"
                   step="0.01"
                   min="0"
