@@ -225,7 +225,7 @@ const handleReset = (): void => {
         :title="`Switch to ${activeTheme === 'dark' ? 'light' : 'dark'} theme`"
         @click="toggleTheme"
       >
-        <Sun v-if="activeTheme === 'dark'" :size="18" />
+        <Sun v-if="activeTheme === 'light'" :size="18" />
         <Moon v-else :size="18" />
       </button>
     </div>
@@ -371,7 +371,7 @@ const handleReset = (): void => {
       <span>&copy; 2026 forpConv</span>
       <span class="footer-divider">•</span>
       <a
-        href="https://github.com/Faleonfall"
+        href="https://github.com/Faleonfall/ForpConv"
         target="_blank"
         rel="noopener noreferrer"
         class="footer-link"

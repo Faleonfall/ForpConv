@@ -356,6 +356,22 @@ body {
   background: var(--gradient-app-background);
   background-attachment: fixed;
   overflow-x: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Enable text selection only where appropriate */
+input,
+textarea,
+select,
+[contenteditable="true"],
+p,
+code,
+pre,
+.selectable-text,
+.accordion-content {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 #app {
