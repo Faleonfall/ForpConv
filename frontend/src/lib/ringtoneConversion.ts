@@ -1,4 +1,3 @@
-export const FFMPEG_CORE_URL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
 export const OUTPUT_FILE_NAME = "output.m4a";
 export const RINGTONE_MIME_TYPE = "audio/x-m4r";
 

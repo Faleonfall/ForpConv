@@ -6,14 +6,8 @@ const emit = defineEmits<{
   (e: "file-selected", file: File): void;
 }>();
 
-const {
-  fileInput,
-  isDragOver,
-  errorMessage,
-  triggerFileSelect,
-  onDrop,
-  onFileChange,
-} = useFileUpload((file) => emit("file-selected", file));
+const { isDragOver, errorMessage, triggerFileSelect, onDrop, onFileChange } =
+  useFileUpload((file) => emit("file-selected", file));
 </script>
 
 <template>

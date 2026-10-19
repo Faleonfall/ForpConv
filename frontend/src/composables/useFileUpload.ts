@@ -1,8 +1,8 @@
-import { ref } from "vue";
+import { ref, useTemplateRef } from "vue";
 import { validateMediaFile } from "../lib/fileValidation";
 
 export function useFileUpload(onFileSelected: (file: File) => void) {
-  const fileInput = ref<HTMLInputElement | null>(null);
+  const fileInput = useTemplateRef<HTMLInputElement>("fileInput");
   const isDragOver = ref(false);
   const errorMessage = ref("");
 
@@ -33,7 +33,6 @@ export function useFileUpload(onFileSelected: (file: File) => void) {
   };
 
   return {
-    fileInput,
     isDragOver,
     errorMessage,
     triggerFileSelect,

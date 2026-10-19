@@ -1,4 +1,11 @@
-import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  computed,
+  watch,
+  useTemplateRef,
+} from "vue";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin, {
   type Region,
@@ -31,8 +38,8 @@ export function useRingtoneTrimmer(
   getFile: () => File,
   onConvert: (params: ConvertParams) => void,
 ) {
-  const waveformContainer = ref<HTMLDivElement | null>(null);
-  const videoRef = ref<HTMLVideoElement | null>(null);
+  const waveformContainer = useTemplateRef<HTMLDivElement>("waveformContainer");
+  const videoRef = useTemplateRef<HTMLVideoElement>("videoRef");
   const isPlaying = ref(false);
   const isLoaded = ref(false);
   const duration = ref(0);
@@ -283,8 +290,6 @@ export function useRingtoneTrimmer(
 
   return {
     vFocus,
-    waveformContainer,
-    videoRef,
     isPlaying,
     isLoaded,
     duration,

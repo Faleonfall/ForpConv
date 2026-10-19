@@ -19,8 +19,6 @@ const emit = defineEmits<{
 
 const {
   vFocus,
-  waveformContainer,
-  videoRef,
   isPlaying,
   isLoaded,
   duration,

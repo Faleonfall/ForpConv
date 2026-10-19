@@ -1,8 +1,8 @@
 import { ref, onMounted } from "vue";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { toBlobURL, fetchFile } from "@ffmpeg/util";
+import { fetchFile } from "@ffmpeg/util";
+import { loadFfmpegCore } from "../lib/ffmpegNetwork";
 import {
-  FFMPEG_CORE_URL,
   OUTPUT_FILE_NAME,
   RINGTONE_MIME_TYPE,
   buildFfmpegArgs,
@@ -28,24 +28,13 @@ export function useRingtoneConverter() {
 
   onMounted(async () => {
     try {
-      const baseURL = FFMPEG_CORE_URL;
-
       // Bind progress logger for initialization if available
       ffmpeg.on("log", ({ message }) => {
         // Look for load indicators or log initialization steps
         console.log("[FFmpeg Log]", message);
       });
 
-      await ffmpeg.load({
-        coreURL: await toBlobURL(
-          `${baseURL}/ffmpeg-core.js`,
-          "text/javascript",
-        ),
-        wasmURL: await toBlobURL(
-          `${baseURL}/ffmpeg-core.wasm`,
-          "application/wasm",
-        ),
-      });
+      await loadFfmpegCore(ffmpeg);
 
       currentStep.value = "upload";
     } catch (error) {
