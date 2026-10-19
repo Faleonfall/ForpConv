@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10151d" />
+    <!-- Applies the saved theme, else the system one, before first paint.
+         The key matches THEME_STORAGE_KEY in src/lib/themeStorage.ts, and the
+         colors match --color-background, which useTheme reads once mounted -->
+    <script>
+      let theme = null;
+      try {
+        theme = localStorage.getItem("forpconv-theme");
+      } catch {}
+      if (theme !== "dark" && theme !== "light") {
+        theme = matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark";
+      }
+      document.documentElement.setAttribute("data-theme", theme);
+      if (theme === "light") {
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute("content", "#f7efe5");
+      }
+    </script>
+
+    <!-- Primary SEO Metadata -->
+    <title>forpConv</title>
+    <link rel="canonical" href="https://faleonfall.github.io/ForpConv/" />
+    <link rel="manifest" href="./site.webmanifest" />
+    <meta name="application-name" content="forpConv" />
+    <meta
+      name="description"
+      content="Create M4R iPhone ringtones from popular music and video formats. Runs locally on your device for privacy and speed."
+    />
+    <meta
+      name="keywords"
+      content="m4r converter, iphone ringtone maker, audio converter, aac encoder, video to ringtone, cut mp3, trim audio, client-side, webassembly, ffmpeg"
+    />
+    <meta name="author" content="forpConv" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook Social Metadata -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://faleonfall.github.io/ForpConv/" />
+    <meta property="og:title" content="forpConv - iPhone M4R Ringtone Maker" />
+    <meta
+      property="og:description"
+      content="Trim and convert audio or video files into M4R ringtones. Runs locally in your browser."
+    />
+    <meta
+      property="og:image"
+      content="https://faleonfall.github.io/ForpConv/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="forpConv logo and name above a purple audio waveform with a highlighted 30 second trim selection on a dark background."
+    />
+    <meta property="og:site_name" content="forpConv" />
+
+    <!-- Twitter Card Social Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "forpConv",
+        "url": "https://faleonfall.github.io/ForpConv/",
+        "image": "https://faleonfall.github.io/ForpConv/og-image.png",
+        "description": "Trim and convert audio or video files into M4R iPhone ringtones in your browser.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any",
+        "isAccessibleForFree": true
+      }
+    </script>
+
+    <!-- Mobile Web App Experience Settings -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="forpConv" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+
+    <!-- Cross-Origin Isolation Service Worker for ffmpeg.wasm -->
+    <script src="./coi-serviceworker.js" defer></script>
+
+    <!-- Google Fonts Preconnecting & Loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>Enable JavaScript to create ringtones locally.</noscript>
+
+    <!-- Application Entrypoint -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+@use "mixins" as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  @include display-text(1rem);
+  color: var(--color-on-accent);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-primary {
+  background: var(--gradient-accent);
+  box-shadow: var(--shadow-button);
+  color: var(--color-on-accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: var(--shadow-button-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-button-active);
+}
+
+.btn-secondary {
+  background: color-mix(in srgb, var(--color-white) 5%, transparent);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-white) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-white) 15%, transparent);
+}
+
+.btn-tall {
+  height: 52px;
+}
+
+.btn-wide {
+  width: 100%;
+  font-size: 1.05rem;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}

@@ -1,0 +1,35 @@
+// A token at the given opacity
+@function fade($token, $percent) {
+  @return color-mix(in srgb, var(--#{$token}) $percent, transparent);
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin frosted($blur) {
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+}
+
+@mixin round-button($size) {
+  @include flex-center;
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+@mixin display-text($size, $weight: 700) {
+  font-family: var(--font-display);
+  font-size: $size;
+  font-weight: $weight;
+}
+
+@mixin icon-label($gap) {
+  display: flex;
+  align-items: center;
+  gap: $gap;
+}

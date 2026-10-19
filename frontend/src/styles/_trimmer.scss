@@ -1,0 +1,258 @@
+@use "mixins" as *;
+
+.trimmer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.trimmer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trimmer-title {
+  @include display-text(1.5rem);
+}
+
+.trimmer-video {
+  @include flex-center;
+  width: 100%;
+  max-height: 240px;
+  background: var(--color-black);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-panel-border);
+}
+
+.trimmer-video video {
+  max-height: 240px;
+  max-width: 100%;
+}
+
+.trimmer-waveform-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trimmer-decoding {
+  @include flex-center;
+  height: 128px;
+}
+
+.trimmer-decoding-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.trimmer-decoding-spinner {
+  width: 32px;
+  height: 32px;
+  color: var(--color-accent);
+  animation: spin 1s linear infinite;
+}
+
+.trimmer-decoding-track {
+  opacity: 0.25;
+}
+
+.trimmer-decoding-head {
+  opacity: 0.75;
+}
+
+.trimmer-decoding-text {
+  font-size: 0.9rem;
+  color: var(--color-text-soft);
+}
+
+.trimmer-waveform {
+  background: var(--color-inset);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--color-panel-border);
+  position: relative;
+}
+
+.trimmer-timeline {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+}
+
+.trimmer-timeline > span:first-child {
+  text-align: left;
+}
+
+.trimmer-timeline > span:last-child {
+  text-align: right;
+}
+
+.trimmer-mini-controls {
+  @include flex-center;
+  gap: 8px;
+}
+
+.trimmer-play,
+.trimmer-reset {
+  @include round-button(32px);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-text);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.trimmer-play {
+  background: var(--gradient-accent);
+  color: var(--color-on-accent);
+  border: none;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-black) 15%, transparent);
+}
+
+.trimmer-play:hover {
+  transform: scale(1.08);
+}
+
+.trimmer-play-icon {
+  margin-left: 1px;
+}
+
+.trimmer-reset:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-surface-hover);
+}
+
+.trimmer-controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.trimmer-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  background: var(--color-inset);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.trimmer-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-soft);
+  margin-bottom: 4px;
+}
+
+.trimmer-stat-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.trimmer-stat-start {
+  color: var(--color-accent);
+}
+
+.trimmer-stat-end {
+  color: var(--color-accent-strong);
+}
+
+.trimmer-stat-length {
+  color: var(--color-positive);
+}
+
+.trimmer-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trimmer-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.trimmer-label-icon {
+  @include icon-label(6px);
+}
+
+.trimmer-fade-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.trimmer-fade-value {
+  cursor: pointer;
+  border-bottom: 1px dotted var(--color-text-soft);
+}
+
+.trimmer-fade-input {
+  width: 50px;
+  height: 19px;
+  background: color-mix(in srgb, var(--color-black) 25%, transparent);
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 4px;
+  padding: 0 4px;
+  outline: none;
+  line-height: 1;
+  transition: all 0.2s ease;
+  -moz-appearance: textfield;
+}
+
+.trimmer-fade-input::-webkit-outer-spin-button,
+.trimmer-fade-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.trimmer-fade-input:focus {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-black) 45%, transparent);
+  box-shadow: 0 0 8px var(--color-panel-glow);
+}
+
+@media (max-width: 600px) {
+  .trimmer-controls-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-height: 850px) {
+  .trimmer-card,
+  .trimmer-controls-panel {
+    gap: 16px;
+  }
+  .trimmer-settings-form {
+    gap: 12px;
+  }
+}
+
+@media (max-height: 700px) {
+  .trimmer-card,
+  .trimmer-controls-panel {
+    gap: 12px;
+  }
+  .trimmer-settings-form {
+    gap: 8px;
+  }
+  .trimmer-waveform {
+    padding: 10px;
+  }
+}

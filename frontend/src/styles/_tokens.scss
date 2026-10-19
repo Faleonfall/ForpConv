@@ -1,0 +1,32 @@
+// Theme independent values. Theme colors live in _themes.scss.
+:root {
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  --font-display: "Outfit", var(--font-sans);
+
+  --color-black: #000;
+  --color-white: #fff;
+  --color-positive: #10b981;
+  --color-warning: #f59e0b;
+  --color-error-text: #f87171;
+
+  --color-inset: color-mix(in srgb, var(--color-black) 15%, transparent);
+
+  // Read by script through getComputedStyle for the waveform
+  --color-wave: #4f46e5;
+  --color-wave-progress: #a855f7;
+  --color-wave-cursor: #c084fc;
+  --color-wave-region: color-mix(
+    in srgb,
+    var(--color-wave-progress) 15%,
+    transparent
+  );
+
+  --color-loader-start: #6366f1;
+  --color-loader-end: var(--color-wave-progress);
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}

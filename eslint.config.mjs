@@ -1,126 +1,117 @@
 import tseslintPlugin from "@typescript-eslint/eslint-plugin";
 import tseslintParser from "@typescript-eslint/parser";
-import pluginVue from "eslint-plugin-vue";
+import prettierConfig from "eslint-config-prettier/flat";
+import vuePlugin from "eslint-plugin-vue";
 import vueParser from "vue-eslint-parser";
 
-const localRulesPlugin = {
-  rules: {
-    "max-arrow-lines": {
-      meta: {
-        type: "suggestion",
-        schema: [
-          {
-            type: "object",
-            properties: {
-              max: { type: "number" },
-            },
-            additionalProperties: false,
-          },
-        ],
+// ESLint loads custom rules only through a plugin, so this one sits in an
+// inline plugin named local. Long arrow functions become named functions.
+const maxArrowLinesRule = {
+  meta: {
+    type: "suggestion",
+    docs: { description: "limit arrow function length" },
+    schema: [
+      {
+        type: "object",
+        properties: { max: { type: "number" } },
+        additionalProperties: false,
       },
-      create(context) {
-        const [{ max = 100 } = {}] = context.options;
-
-        return {
-          ArrowFunctionExpression(node) {
-            if (!node.loc) {
-              return;
-            }
-
-            const lineCount = node.loc.end.line - node.loc.start.line + 1;
-
-            if (lineCount <= max) {
-              return;
-            }
-
-            context.report({
-              node,
-              message: `Arrow function has too many lines (${lineCount}). Maximum allowed is ${max}.`,
-            });
-          },
-        };
-      },
+    ],
+    messages: {
+      tooLong:
+        "Arrow function has {{lines}} lines. Maximum allowed is {{max}}.",
     },
   },
+  create(context) {
+    const max = context.options[0]?.max ?? 100;
+
+    return {
+      ArrowFunctionExpression(node) {
+        if (!node.loc) {
+          return;
+        }
+
+        const lines = node.loc.end.line - node.loc.start.line + 1;
+
+        if (lines > max) {
+          context.report({ node, messageId: "tooLong", data: { lines, max } });
+        }
+      },
+    };
+  },
+};
+
+const plugins = {
+  "@typescript-eslint": tseslintPlugin,
+  local: { rules: { "max-arrow-lines": maxArrowLinesRule } },
+};
+
+const rules = {
+  // Type and value imports from one module must share a line, so a module
+  // is named exactly once per file and nothing drifts out of sync.
+  "no-duplicate-imports": "error",
+  "@typescript-eslint/no-explicit-any": "error",
+  "@typescript-eslint/no-unused-vars": [
+    "error",
+    { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+  ],
+  "@typescript-eslint/no-floating-promises": "error",
+  "@typescript-eslint/no-misused-promises": [
+    "error",
+    { checksVoidReturn: false },
+  ],
+  // Inline rather than separate, so a type import never counts as a second
+  // import of a module already imported for its values.
+  "@typescript-eslint/consistent-type-imports": [
+    "error",
+    { prefer: "type-imports", fixStyle: "inline-type-imports" },
+  ],
+  "local/max-arrow-lines": ["error", { max: 100 }],
 };
 
 export default [
   {
     ignores: [
       "node_modules/",
+      "frontend/dist/",
+      "frontend/public/",
       "dist/",
       "build/",
       "coverage/",
-      ".nx/",
-      ".yarn/",
-      "tmp/",
-      "temp/",
     ],
   },
-  // Register plugins globally so they are available to all files/virtual files
+  ...vuePlugin.configs["flat/recommended"],
   {
-    plugins: {
-      "@typescript-eslint": tseslintPlugin,
-      local: localRulesPlugin,
-      vue: pluginVue,
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tseslintParser,
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parserOptions: {
+        // Every tsconfig in the repo, so typed rules see every file.
+        project: ["./frontend/tsconfig.json"],
+      },
     },
-    linterOptions: {
-      reportUnusedDisableDirectives: "off",
-    },
+    plugins,
+    rules,
   },
-  ...pluginVue.configs["flat/recommended"],
   {
-    files: ["**/*.ts", "**/*.tsx", "**/*.vue"],
+    files: ["**/*.vue"],
     languageOptions: {
       parser: vueParser,
       parserOptions: {
         parser: tseslintParser,
-        project: [
-          "./tsconfig.app.json",
-          "./tsconfig.node.json",
-          "./tsconfig.base.json",
-        ],
+        project: ["./frontend/tsconfig.json"],
         extraFileExtensions: [".vue"],
-        ecmaVersion: "latest",
         sourceType: "module",
       },
     },
-    rules: {
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_|^\\$", varsIgnorePattern: "^_|^\\$" },
-      ],
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/no-misused-promises": [
-        "error",
-        { checksVoidReturn: false },
-      ],
-      "@typescript-eslint/consistent-type-imports": [
-        "error",
-        { prefer: "type-imports" },
-      ],
-      "max-lines": [
-        "error",
-        { max: 500, skipBlankLines: true, skipComments: true },
-      ],
-      "local/max-arrow-lines": ["error", { max: 100 }],
-
-      // Vue overrides
-      "vue/max-attributes-per-line": "off",
-      "vue/singleline-html-element-content-newline": "off",
-      "vue/html-self-closing": "off",
-      "vue/multi-word-component-names": "off",
-      "vue/html-closing-bracket-newline": "off",
-      "vue/html-indent": "off",
-    },
+    plugins,
+    rules,
   },
   {
-    files: ["**/*.js", "**/*.jsx", "**/*.cjs", "**/*.mjs"],
-    languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
-    },
-    rules: {},
+    files: ["**/*.js", "**/*.cjs", "**/*.mjs"],
+    languageOptions: { ecmaVersion: "latest", sourceType: "module" },
   },
+  prettierConfig,
 ];

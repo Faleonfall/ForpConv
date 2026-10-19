@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://faleonfall.github.io/ForpConv/sitemap.xml

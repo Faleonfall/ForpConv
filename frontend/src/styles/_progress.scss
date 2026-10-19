@@ -1,0 +1,73 @@
+@use "mixins" as *;
+
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.progress-loader {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 24px;
+}
+
+.progress-loader-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-loader-bg {
+  fill: none;
+  stroke: color-mix(in srgb, var(--color-white) 5%, transparent);
+  stroke-width: 6;
+}
+
+.progress-loader-fill {
+  fill: none;
+  stroke: url(#loaderGradient);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.progress-loader-fill-pulse {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.progress-gradient-start {
+  stop-color: var(--color-loader-start);
+}
+
+.progress-gradient-end {
+  stop-color: var(--color-loader-end);
+}
+
+.progress-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  @include display-text(1.15rem);
+  color: var(--color-text);
+}
+
+.progress-spinner {
+  color: var(--color-accent);
+  animation: spin 1s linear infinite;
+}
+
+.progress-title {
+  @include display-text(1.25rem);
+  margin-bottom: 8px;
+}
+
+.progress-text {
+  color: var(--color-text-soft);
+  font-size: 0.9rem;
+  max-width: 320px;
+}

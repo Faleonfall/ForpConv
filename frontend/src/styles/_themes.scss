@@ -1,0 +1,156 @@
+@use "mixins" as *;
+
+@mixin dark-theme {
+  color-scheme: dark;
+
+  --color-background: #10151d;
+  --color-background-end: #172332;
+  --color-text: #f4efe7;
+  --color-text-soft: #c7d2de;
+
+  --color-accent: #f7b267;
+  --color-accent-strong: #f4845f;
+  --color-on-accent: #10151d;
+
+  --color-panel-base: #0b1118;
+  --color-success-base: #70e0b3;
+  --color-error-base: #ff7c7c;
+  --color-glow: #ffa666;
+
+  --color-panel-background: #{fade(color-panel-base, 58%)};
+  --color-panel-border: #{fade(color-white, 10%)};
+  --color-panel-glow: #{fade(color-accent, 12%)};
+
+  --color-card-border: #{fade(color-white, 8%)};
+  --color-card-background: #{fade(color-white, 3%)};
+
+  --color-success-border: #{fade(color-success-base, 28%)};
+  --color-error-border: #{fade(color-error-base, 30%)};
+
+  --color-surface-hover: #{fade(color-white, 8%)};
+  --color-slider-track: #{fade(color-white, 10%)};
+  --color-slider-track-hover: #{fade(color-white, 18%)};
+  --color-scrollbar-thumb: #{fade(color-white, 15%)};
+  --color-scrollbar-thumb-hover: #{fade(color-white, 30%)};
+
+  --gradient-app-background:
+    radial-gradient(
+      circle at top left,
+      #{fade(color-glow, 20%)},
+      transparent 24rem
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-background) 0%,
+      var(--color-background-end) 100%
+    );
+
+  --gradient-card:
+    linear-gradient(
+      180deg,
+      #{fade(color-white, 4.5%)},
+      #{fade(color-white, 2%)}
+    ),
+    var(--color-card-background);
+
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-accent-strong)
+  );
+
+  --shadow-panel: 0 24px 80px #{fade(color-black, 18%)};
+  --shadow-button: 0 14px 30px #{fade(color-accent-strong, 22%)};
+  --shadow-button-hover: 0 18px 36px #{fade(color-accent-strong, 30%)};
+  --shadow-button-active: 0 8px 18px #{fade(color-accent-strong, 22%)};
+  --shadow-accent-glow:
+    0 0 0 1px #{fade(color-accent, 22%)}, 0 0 22px #{fade(color-accent, 16%)};
+}
+
+@mixin light-theme {
+  color-scheme: light;
+
+  --color-background: #f7efe5;
+  --color-background-end: #eaf2f4;
+  --color-text: #18212d;
+  --color-text-soft: #5a6675;
+
+  --color-accent: #b95f2d;
+  --color-accent-strong: #d06f45;
+  --color-on-accent: #fffaf3;
+
+  --color-panel-base: #fffcf6;
+  --color-ink: #2d3949;
+  --color-success-base: #189067;
+  --color-error-base: #c54848;
+  --color-glow: #ffbd79;
+  --color-shadow: #392d23;
+
+  --color-panel-background: #{fade(color-panel-base, 72%)};
+  --color-panel-border: #{fade(color-ink, 13%)};
+  --color-panel-glow: #{fade(color-accent, 11%)};
+
+  --color-card-border: #{fade(color-ink, 11%)};
+  --color-card-background: #{fade(color-white, 58%)};
+
+  --color-success-border: #{fade(color-success-base, 28%)};
+  --color-error-border: #{fade(color-error-base, 28%)};
+
+  --color-surface-hover: #{fade(color-white, 86%)};
+  --color-slider-track: #{fade(color-black, 10%)};
+  --color-slider-track-hover: #{fade(color-black, 18%)};
+  --color-scrollbar-thumb: #{fade(color-black, 15%)};
+  --color-scrollbar-thumb-hover: #{fade(color-black, 30%)};
+
+  --gradient-app-background:
+    radial-gradient(
+      circle at top left,
+      #{fade(color-glow, 36%)},
+      transparent 24rem
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-background) 0%,
+      var(--color-background-end) 100%
+    );
+
+  --gradient-card:
+    linear-gradient(
+      180deg,
+      #{fade(color-white, 78%)},
+      #{fade(color-white, 46%)}
+    ),
+    var(--color-card-background);
+
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-accent-strong)
+  );
+
+  --shadow-panel: 0 24px 80px #{fade(color-shadow, 14%)};
+  --shadow-button: 0 14px 30px #{fade(color-accent, 20%)};
+  --shadow-button-hover: 0 18px 36px #{fade(color-accent, 28%)};
+  --shadow-button-active: 0 8px 18px #{fade(color-accent, 18%)};
+  --shadow-accent-glow:
+    0 0 0 1px #{fade(color-accent, 20%)}, 0 0 22px #{fade(color-accent, 15%)};
+}
+
+:root {
+  @include dark-theme;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    @include light-theme;
+  }
+}
+
+// Explicit choice from the theme toggle wins over the system preference
+:root[data-theme="dark"] {
+  @include dark-theme;
+}
+
+:root[data-theme="light"] {
+  @include light-theme;
+}

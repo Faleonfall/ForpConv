@@ -1,0 +1,79 @@
+@use "mixins" as *;
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--color-panel-border);
+  background-color: var(--color-panel-background);
+  @include frosted(12px);
+  z-index: 50;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.header-logo {
+  @include icon-label(12px);
+}
+
+.header-logo-icon {
+  @include flex-center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--gradient-accent);
+  box-shadow: var(--shadow-accent-glow);
+  color: var(--color-on-accent);
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.header-logo-text {
+  @include display-text(1.25rem);
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.header-actions {
+  @include icon-label(16px);
+}
+
+.header-badge {
+  @include icon-label(8px);
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
+.header-badge-icon {
+  color: var(--color-accent-strong);
+}
+
+.header-theme-toggle {
+  @include round-button(40px);
+  background: transparent;
+  border: 1px solid var(--color-panel-border);
+  color: var(--color-text-soft);
+  transition: all 0.3s ease;
+}
+
+.header-theme-toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-card-background);
+}
+
+@media (max-height: 850px) {
+  .header {
+    padding: 12px 24px;
+  }
+}
+
+@media (max-height: 700px) {
+  .header {
+    padding: 8px 16px;
+  }
+}

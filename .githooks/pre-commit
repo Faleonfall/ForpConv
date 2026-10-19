@@ -12,7 +12,7 @@ if [ -s "$staged_files" ]; then
   xargs -0 npx prettier --write --ignore-unknown -- < "$staged_files"
 fi
 
-npm run lint
+npm run check
 
 if [ -s "$staged_files" ]; then
   xargs -0 git add -- < "$staged_files"
