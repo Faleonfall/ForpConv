@@ -1,6 +1,8 @@
+// Auto margin pins it to the page bottom, padding keeps the gap to the card
 .footer {
   text-align: center;
-  margin-top: 24px;
+  margin-top: auto;
+  padding-top: 24px;
   font-size: 0.8rem;
   color: var(--color-text-soft);
   opacity: 0.75;
@@ -34,12 +36,12 @@
 
 @media (max-height: 850px) {
   .footer {
-    margin-top: 16px;
+    padding-top: 16px;
   }
 }
 
 @media (max-height: 700px) {
   .footer {
-    margin-top: 10px;
+    padding-top: 10px;
   }
 }

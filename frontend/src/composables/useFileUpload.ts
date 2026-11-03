@@ -1,23 +1,37 @@
-import { ref, useTemplateRef } from "vue";
-import { validateMediaFile } from "../lib/fileValidation";
+import { onBeforeUnmount, ref, useTemplateRef } from "vue";
+import { UPLOAD_ERROR_MS, validateMediaFile } from "../lib/fileValidation";
+import { type MediaKind } from "../lib/mediaKind";
 
-export function useFileUpload(onFileSelected: (file: File) => void) {
+export function useFileUpload(
+  getKinds: () => MediaKind[],
+  onFileSelected: (file: File) => void,
+) {
   const fileInput = useTemplateRef<HTMLInputElement>("fileInput");
   const isDragOver = ref(false);
   const errorMessage = ref("");
 
+  let errorTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const clearError = (): void => {
+    clearTimeout(errorTimer);
+    errorMessage.value = "";
+  };
+
   const checkAndEmitFile = (file: File | undefined): void => {
     if (!file) return;
 
-    const error = validateMediaFile(file);
+    clearError();
+    const error = validateMediaFile(file, getKinds());
     if (error) {
       errorMessage.value = error;
+      errorTimer = setTimeout(clearError, UPLOAD_ERROR_MS);
       return;
     }
 
-    errorMessage.value = "";
     onFileSelected(file);
   };
+
+  onBeforeUnmount(() => clearTimeout(errorTimer));
 
   const triggerFileSelect = (): void => {
     fileInput.value?.click();

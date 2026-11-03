@@ -9,8 +9,11 @@ import {
 } from "../components/__spec__/waveSurferHelpers";
 import {
   createFfmpegFake,
+  stubCoreFetch,
   type FfmpegFake,
 } from "../composables/__spec__/ffmpegHelpers";
+import { findTarget } from "../lib/formatCatalog";
+import { buildConvertArgs } from "../lib/formatConversion";
 import { OUTPUT_FILE_NAME, buildFfmpegArgs } from "../lib/ringtoneConversion";
 import { THEME_STORAGE_KEY } from "../lib/themeStorage";
 
@@ -24,7 +27,6 @@ vi.mock("@ffmpeg/ffmpeg", () => ({
 }));
 
 vi.mock("@ffmpeg/util", () => ({
-  toBlobURL: (url: string) => Promise.resolve(`blob:${url}`),
   fetchFile: () => Promise.resolve(new Uint8Array([9])),
 }));
 
@@ -53,6 +55,7 @@ async function openTrimmer(user: ReturnType<typeof userEvent.setup>) {
 }
 
 beforeEach(() => {
+  stubCoreFetch();
   ffmpegFake = createFfmpegFake();
   waveFake = createWaveSurferFake();
   vi.spyOn(console, "log").mockImplementation(() => {});
@@ -61,8 +64,10 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
   document.documentElement.removeAttribute("data-theme");
+  history.replaceState(null, "", "/");
 });
 
 describe("App ringtone conversion", () => {
@@ -148,6 +153,89 @@ describe("App ringtone conversion", () => {
     expect(screen.getByText(/Unsupported file format/)).toBeInTheDocument();
     expect(screen.queryByText("Customize Ringtone")).not.toBeInTheDocument();
     expect(ffmpegFake.ffmpeg.writeFile).not.toHaveBeenCalled();
+  });
+});
+
+describe("App format conversion", () => {
+  it("turns a video into a GIF from the Convert tab", async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const { container } = render(App);
+    await user.click(await screen.findByRole("tab", { name: "Convert" }));
+    expect(window.location.hash).toBe("#convert");
+
+    await user.upload(
+      container.querySelector<HTMLInputElement>('input[type="file"]')!,
+      new File(["x"], "Holiday.mp4", { type: "video/mp4" }),
+    );
+    await user.selectOptions(
+      await screen.findByLabelText("Convert To"),
+      "video-gif",
+    );
+    await user.click(screen.getByRole("button", { name: /^Convert$/ }));
+
+    expect(await screen.findByText("File Converted!")).toBeInTheDocument();
+    // jsdom loads no preview, so the GIF falls back to its cap
+    expect(ffmpegFake.ffmpeg.exec).toHaveBeenCalledWith(
+      buildConvertArgs(
+        findTarget("video-gif")!,
+        "30",
+        "input.mp4",
+        { start: 0, end: 30 },
+        "800",
+      ),
+    );
+    expect(
+      await screen.findByRole("link", { name: /Download File/ }),
+    ).toHaveAttribute("download", "Holiday.gif");
+  });
+
+  it("swaps the upload when switching tabs back and forth", async () => {
+    const user = userEvent.setup();
+    render(App);
+    await screen.findByText("Drop your audio or video file here");
+
+    await user.click(screen.getByRole("tab", { name: "Convert" }));
+    expect(
+      await screen.findByText("Drop your audio, video or image file here"),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("File Format Converter")).toBeVisible();
+
+    await user.click(screen.getByRole("tab", { name: "Ringtone" }));
+    expect(
+      await screen.findByText("Drop your audio or video file here"),
+    ).toBeInTheDocument();
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByText("Drop your audio, video or image file here"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(window.location.hash).toBe("");
+  });
+
+  it("opens on the converter from a link with its hash", async () => {
+    history.replaceState(null, "", "/#convert");
+    render(App);
+
+    expect(
+      await screen.findByText("Drop your audio, video or image file here"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Convert" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  it("keeps the ringtone maker free of pictures", async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    const { container } = render(App);
+    await screen.findByText("Drop your audio or video file here");
+
+    await user.upload(
+      container.querySelector<HTMLInputElement>('input[type="file"]')!,
+      new File(["x"], "photo.png", { type: "image/png" }),
+    );
+
+    expect(screen.getByText(/Unsupported file format/)).toBeInTheDocument();
   });
 });
 

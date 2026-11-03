@@ -4,7 +4,6 @@ import {
   buildAudioFilters,
   buildFfmpegArgs,
   inputFileName,
-  progressPercent,
   type ConvertParams,
 } from "../ringtoneConversion";
 
@@ -61,15 +60,5 @@ describe("buildFfmpegArgs", () => {
     const args = buildFfmpegArgs({ ...params, volume: 2, fadeIn: 1 }, "in.wav");
     const index = args.indexOf("-af");
     expect(args[index + 1]).toBe("volume=2,afade=t=in:st=0:d=1");
-  });
-});
-
-describe("progressPercent", () => {
-  it("rounds to a whole percent", () => {
-    expect(progressPercent(0.426)).toBe(43);
-  });
-
-  it("caps at one hundred", () => {
-    expect(progressPercent(1.2)).toBe(100);
   });
 });

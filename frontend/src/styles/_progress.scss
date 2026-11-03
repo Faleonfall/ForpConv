@@ -35,10 +35,6 @@
   transition: stroke-dashoffset 0.3s ease;
 }
 
-.progress-loader-fill-pulse {
-  animation: pulse 2s infinite ease-in-out;
-}
-
 .progress-gradient-start {
   stop-color: var(--color-loader-start);
 }
@@ -69,5 +65,12 @@
 .progress-text {
   color: var(--color-text-soft);
   font-size: 0.9rem;
-  max-width: 320px;
+  max-width: 440px;
+  // Digits keep one width, so the line doesn't jitter as the clock ticks
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+}
+
+.progress-retry {
+  margin-top: 20px;
 }

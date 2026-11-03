@@ -1,13 +1,31 @@
 <script setup lang="ts">
-import { UploadCloud, Music, Video, AlertCircle } from "@lucide/vue";
+import {
+  UploadCloud,
+  Music,
+  Video,
+  Image as ImageIcon,
+  AlertCircle,
+} from "@lucide/vue";
 import { useFileUpload } from "../composables/useFileUpload";
+import { acceptFor, uploadBadgeLabel, uploadTitle } from "../lib/appMode";
+import { type MediaKind } from "../lib/mediaKind";
+
+const props = defineProps<{
+  kinds: MediaKind[];
+  subtitle: string;
+  // Rejection from the flow after the file passed validation
+  rejection?: string;
+}>();
 
 const emit = defineEmits<{
   (e: "file-selected", file: File): void;
 }>();
 
 const { isDragOver, errorMessage, triggerFileSelect, onDrop, onFileChange } =
-  useFileUpload((file) => emit("file-selected", file));
+  useFileUpload(
+    () => props.kinds,
+    (file) => emit("file-selected", file),
+  );
 </script>
 
 <template>
@@ -23,7 +41,7 @@ const { isDragOver, errorMessage, triggerFileSelect, onDrop, onFileChange } =
       <input
         ref="fileInput"
         type="file"
-        accept="audio/*,video/*"
+        :accept="acceptFor(kinds)"
         hidden
         @change="onFileChange"
       />
@@ -32,30 +50,32 @@ const { isDragOver, errorMessage, triggerFileSelect, onDrop, onFileChange } =
         <UploadCloud :size="36" />
       </div>
 
-      <h2 class="upload-title">Drop your audio or video file here</h2>
-      <p class="upload-subtitle">
-        Supports MP3, WAV, M4A, FLAC, MP4, MOV, and more
-      </p>
+      <h2 class="upload-title">{{ uploadTitle(kinds) }}</h2>
+      <p class="upload-subtitle">{{ subtitle }}</p>
 
       <button class="btn btn-primary" type="button">Choose File</button>
     </div>
 
     <!-- Supported Formats Badge Panel -->
     <div class="upload-formats">
-      <div class="upload-format">
+      <div v-if="kinds.includes('audio')" class="upload-format">
         <Music class="upload-format-audio" :size="16" />
-        <span>Audio (MP3, M4A, WAV, FLAC)</span>
+        <span>{{ uploadBadgeLabel("audio") }}</span>
       </div>
-      <div class="upload-format">
+      <div v-if="kinds.includes('video')" class="upload-format">
         <Video class="upload-format-video" :size="16" />
-        <span>Video (MP4, MOV, MKV, WebM)</span>
+        <span>{{ uploadBadgeLabel("video") }}</span>
+      </div>
+      <div v-if="kinds.includes('image')" class="upload-format">
+        <ImageIcon class="upload-format-image" :size="16" />
+        <span>{{ uploadBadgeLabel("image") }}</span>
       </div>
     </div>
 
     <!-- Error Alert -->
-    <div v-if="errorMessage" class="upload-error">
+    <div v-if="errorMessage || rejection" class="upload-error">
       <AlertCircle :size="18" />
-      <span>{{ errorMessage }}</span>
+      <span>{{ errorMessage || rejection }}</span>
     </div>
   </div>
 </template>

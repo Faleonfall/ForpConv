@@ -14,6 +14,8 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@lucide/vue": "^1.59.0",
+    "gifsicle-wasm": "^1.96.4",
+    "heic-to": "^1.6.7",
     "vue": "^3.5.44",
     "wavesurfer.js": "^8.0.2"
   },

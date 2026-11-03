@@ -1,0 +1,61 @@
+@use "mixins" as *;
+
+.picker-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+// Shrinks so a long name ellipsizes instead of pushing the button out
+.picker-file {
+  min-width: 0;
+}
+
+.picker-file-name {
+  @include display-text(1.5rem);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.picker-file-size {
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
+// Sits between the selects and Convert, the card gap would push it too far
+.picker-estimate {
+  margin: -12px 0;
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+  text-align: center;
+}
+
+.picker-header .btn {
+  flex-shrink: 0;
+}
+
+.picker-preview {
+  @include flex-center;
+}
+
+.picker-image {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-panel-border);
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 16px;
+}

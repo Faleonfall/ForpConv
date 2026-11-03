@@ -1,8 +1,7 @@
 export const OUTPUT_FILE_NAME = "output.m4a";
 export const RINGTONE_MIME_TYPE = "audio/x-m4r";
 
-export type WorkflowStep =
-  "loading" | "upload" | "trim" | "converting" | "download";
+export type WorkflowStep = "upload" | "trim" | "converting" | "download";
 
 export interface ConvertParams {
   startTime: number;
@@ -65,8 +64,4 @@ export function buildFfmpegArgs(
   );
 
   return args;
-}
-
-export function progressPercent(progress: number): number {
-  return Math.min(100, Math.round(progress * 100));
 }

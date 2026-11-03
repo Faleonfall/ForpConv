@@ -2,18 +2,50 @@ import { render, screen } from "@testing-library/vue";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import ResultDownload from "../ResultDownload.vue";
+import { RINGTONE_DOWNLOAD_COPY } from "../../lib/appMode";
+import { type MediaKind } from "../../lib/mediaKind";
 
-const props = { blob: new Blob(["x".repeat(2048)]), title: "My Tone" };
+const props = {
+  blob: new Blob(["x".repeat(2048)]),
+  fileName: "My Tone.m4r",
+  kind: "audio" as MediaKind,
+  copy: RINGTONE_DOWNLOAD_COPY,
+};
 
 describe("ResultDownload", () => {
   it("shows the file name and size", () => {
     render(ResultDownload, { props });
 
-    expect(screen.getByText("My Tone.m4r")).toBeInTheDocument();
+    expect(screen.getByLabelText("File name")).toHaveValue("My Tone");
+    expect(screen.getByText(".m4r")).toBeInTheDocument();
     expect(screen.getByText("Size: 2.0 KB")).toBeInTheDocument();
   });
 
-  it("links the ringtone for download", async () => {
+  it("downloads under a new name with the format kept", async () => {
+    const user = userEvent.setup();
+    render(ResultDownload, { props });
+    const name = screen.getByLabelText("File name");
+
+    await user.clear(name);
+    await user.type(name, "Wake: up");
+
+    expect(
+      await screen.findByRole("link", { name: /Download Ringtone File/ }),
+    ).toHaveAttribute("download", "Wake up.m4r");
+  });
+
+  it("falls back to a default when the name is cleared", async () => {
+    const user = userEvent.setup();
+    render(ResultDownload, { props });
+
+    await user.clear(screen.getByLabelText("File name"));
+
+    expect(
+      await screen.findByRole("link", { name: /Download Ringtone File/ }),
+    ).toHaveAttribute("download", "converted.m4r");
+  });
+
+  it("links the file for download", async () => {
     render(ResultDownload, { props });
 
     const link = await screen.findByRole("link", {
@@ -21,6 +53,16 @@ describe("ResultDownload", () => {
     });
     expect(link).toHaveAttribute("download", "My Tone.m4r");
     expect(link.getAttribute("href")).toMatch(/^blob:/);
+  });
+
+  it("previews an image result as a picture", async () => {
+    render(ResultDownload, {
+      props: { ...props, fileName: "clip.gif", kind: "image" },
+    });
+
+    expect(
+      await screen.findByRole("img", { name: "clip.gif" }),
+    ).toHaveAttribute("src", expect.stringMatching(/^blob:/));
   });
 
   it("emits reset to convert another file", async () => {

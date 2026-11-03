@@ -1,19 +1,13 @@
-const ALLOWED_EXTENSIONS = [
-  "mp3",
-  "wav",
-  "m4a",
-  "aac",
-  "flac",
-  "ogg",
-  "mp4",
-  "mov",
-  "webm",
-  "mkv",
-  "avi",
-];
+import { fileExtension, mediaKindOf, type MediaKind } from "./mediaKind";
 
 // Maximum file size of 200MB to avoid browser memory crash
 const MAX_FILE_BYTES = 200 * 1024 * 1024;
+
+// Upload errors fade on their own, the user has read them by then
+export const UPLOAD_ERROR_MS = 10_000;
+
+export const SILENT_VIDEO_MESSAGE =
+  "This video has no sound, pick one with audio.";
 
 export interface MediaFileInfo {
   name: string;
@@ -21,14 +15,21 @@ export interface MediaFileInfo {
   size: number;
 }
 
-// Returns an error message, or null when the file can be converted
-export function validateMediaFile(file: MediaFileInfo): string | null {
-  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-  const isAudio = file.type.startsWith("audio/");
-  const isVideo = file.type.startsWith("video/");
+// "audio or video", "audio, video or image"
+export function kindListLabel(kinds: MediaKind[]): string {
+  if (kinds.length < 2) return kinds.join("");
+  return `${kinds.slice(0, -1).join(", ")} or ${kinds[kinds.length - 1]}`;
+}
 
-  if (!isAudio && !isVideo && !ALLOWED_EXTENSIONS.includes(extension)) {
-    return `Unsupported file format (.${extension}). Please upload an audio or video file.`;
+// Returns an error message, or null when the file can be converted
+export function validateMediaFile(
+  file: MediaFileInfo,
+  kinds: MediaKind[],
+): string | null {
+  const kind = mediaKindOf(file);
+
+  if (!kind || !kinds.includes(kind)) {
+    return `Unsupported file format (.${fileExtension(file.name)}). Please upload an ${kindListLabel(kinds)} file.`;
   }
 
   if (file.size > MAX_FILE_BYTES) {

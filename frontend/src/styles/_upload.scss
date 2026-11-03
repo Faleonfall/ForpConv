@@ -80,9 +80,13 @@
   color: var(--color-accent-strong);
 }
 
+.upload-format-image {
+  color: var(--color-positive);
+}
+
 .upload-error {
   @include icon-label(10px);
-  background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+  background: color-mix(in srgb, var(--color-error-base) 8%, transparent);
   border: 1px solid var(--color-error-border);
   border-radius: var(--radius-sm);
   padding: 12px 16px;

@@ -31,6 +31,58 @@
   box-shadow: var(--shadow-accent-glow);
 }
 
+// Holds a select and its drawn chevron, the native arrow is hidden
+.form-select-wrap {
+  position: relative;
+}
+
+.form-select-chevron {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  color: var(--color-text-soft);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.form-select-wrap:hover .form-select-chevron,
+.form-select-wrap:focus-within .form-select-chevron {
+  color: var(--color-accent);
+}
+
+.form-select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 14px 44px 14px 16px;
+  background: color-mix(in srgb, var(--color-black) 20%, transparent);
+  border: 1px solid var(--color-panel-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-select:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-accent-glow);
+}
+
+// Native dropdown lists ignore the translucent field, give them the page color
+.form-select option,
+.form-select optgroup {
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
 .form-range {
   -webkit-appearance: none;
   appearance: none;
@@ -62,6 +114,90 @@
 .form-range::-webkit-slider-thumb:hover {
   transform: scale(1.2);
   background: var(--color-accent-strong);
+}
+
+// On and off switch drawn over a visually hidden checkbox, the whole label
+// is the hit area
+.form-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.form-switch-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.form-switch-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--color-slider-track);
+  border: 1px solid var(--color-panel-border);
+  transition: background 0.2s ease;
+}
+
+.form-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-text-soft);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.form-switch:hover .form-switch-track {
+  background: var(--color-slider-track-hover);
+}
+
+.form-switch-input:checked + .form-switch-track {
+  background: var(--color-accent);
+}
+
+.form-switch-input:checked + .form-switch-track::after {
+  transform: translateX(18px);
+  background: var(--color-on-accent);
+}
+
+.form-switch-input:focus-visible + .form-switch-track {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.form-switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.form-switch-label {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.form-switch-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-switch-track,
+  .form-switch-track::after {
+    transition: none;
+  }
 }
 
 @media (max-height: 850px) {

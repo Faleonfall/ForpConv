@@ -1,18 +1,33 @@
 <script setup lang="ts">
-import { Download, Music, CheckCircle2 } from "@lucide/vue";
+import {
+  Download,
+  Music,
+  Video,
+  Image as ImageIcon,
+  CheckCircle2,
+  Pencil,
+} from "@lucide/vue";
+import { useFileRename } from "../composables/useFileRename";
 import { useObjectUrl } from "../composables/useObjectUrl";
-import { formatFileSize, ringtoneFileName } from "../lib/ringtoneDisplay";
+import { type DownloadCopy } from "../lib/appMode";
+import { type MediaKind } from "../lib/mediaKind";
+import { formatFileSize } from "../lib/ringtoneDisplay";
 
 const props = defineProps<{
   blob: Blob;
-  title: string;
+  fileName: string;
+  kind: MediaKind;
+  copy: DownloadCopy;
 }>();
 
 defineEmits<{
   (e: "reset"): void;
 }>();
 
-const audioUrl = useObjectUrl(() => props.blob);
+const fileUrl = useObjectUrl(() => props.blob);
+const { baseName, extension, downloadName } = useFileRename(
+  () => props.fileName,
+);
 </script>
 
 <template>
@@ -22,37 +37,56 @@ const audioUrl = useObjectUrl(() => props.blob);
       <div class="download-badge">
         <CheckCircle2 :size="32" />
       </div>
-      <h2 class="download-title">Ringtone Created!</h2>
-      <p class="download-text">
-        The M4R file is ready. Download and transfer it to the iPhone.
-      </p>
+      <h2 class="download-title">{{ copy.heading }}</h2>
+      <p class="download-text">{{ copy.text }}</p>
     </div>
 
-    <!-- Ringtone Details Box -->
+    <!-- File Details Box -->
     <div class="download-details">
       <div class="download-file">
         <div class="download-file-icon">
-          <Music :size="20" />
+          <Video v-if="kind === 'video'" :size="20" />
+          <ImageIcon v-else-if="kind === 'image'" :size="20" />
+          <Music v-else :size="20" />
         </div>
         <div class="download-file-info">
-          <div class="download-file-name">
-            {{ ringtoneFileName(title) }}
-          </div>
+          <label class="download-rename">
+            <input
+              v-model="baseName"
+              class="download-name-input"
+              type="text"
+              aria-label="File name"
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <span v-if="extension" class="download-name-extension">
+              .{{ extension }}
+            </span>
+            <Pencil class="download-rename-icon" :size="14" />
+          </label>
           <div class="download-file-size">
             Size: {{ formatFileSize(blob.size) }}
           </div>
         </div>
       </div>
 
-      <!-- Preview Player -->
-      <div class="download-preview">
-        <div class="download-preview-label">Preview Tone</div>
-        <audio
-          v-if="audioUrl"
-          :src="audioUrl"
+      <!-- Preview -->
+      <div v-if="fileUrl" class="download-preview">
+        <div class="download-preview-label">{{ copy.previewLabel }}</div>
+        <video
+          v-if="kind === 'video'"
+          :src="fileUrl"
           controls
-          class="download-audio"
-        ></audio>
+          playsinline
+          class="download-video"
+        ></video>
+        <img
+          v-else-if="kind === 'image'"
+          :src="fileUrl"
+          :alt="downloadName"
+          class="download-image"
+        />
+        <audio v-else :src="fileUrl" controls class="download-audio"></audio>
       </div>
     </div>
 
@@ -60,12 +94,12 @@ const audioUrl = useObjectUrl(() => props.blob);
     <div class="download-actions">
       <!-- Standard HTML Download Link -->
       <a
-        v-if="audioUrl"
-        :href="audioUrl"
-        :download="ringtoneFileName(title)"
+        v-if="fileUrl"
+        :href="fileUrl"
+        :download="downloadName"
         class="btn btn-primary btn-tall btn-wide"
       >
-        <Download :size="20" /> Download Ringtone File
+        <Download :size="20" /> {{ copy.buttonLabel }}
       </a>
       <button class="btn btn-secondary btn-tall" @click="$emit('reset')">
         Convert Another File

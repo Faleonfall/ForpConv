@@ -11,6 +11,12 @@
   justify-content: center;
 }
 
+// Pairs with the footer's auto margin so the free space splits above the
+// content and above the footer, keeping the card centered
+.app-main > :first-child {
+  margin-top: auto;
+}
+
 .app-hero {
   margin-bottom: 30px;
   text-align: center;
@@ -27,6 +33,50 @@
   font-size: 1.05rem;
   max-width: 500px;
   margin: 0 auto;
+}
+
+// Tab switch, the content slides the way the indicator moves. Scoped under
+// app-main so it outranks the card's own transition list, which would
+// otherwise drop the opacity fade.
+.app-main {
+  .mode-forward-enter-active,
+  .mode-forward-leave-active,
+  .mode-back-enter-active,
+  .mode-back-leave-active {
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .mode-forward-enter-from,
+  .mode-back-leave-to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  .mode-forward-leave-to,
+  .mode-back-enter-from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-main {
+    .mode-forward-enter-active,
+    .mode-forward-leave-active,
+    .mode-back-enter-active,
+    .mode-back-leave-active {
+      transition: opacity 0.18s ease;
+    }
+
+    .mode-forward-enter-from,
+    .mode-forward-leave-to,
+    .mode-back-enter-from,
+    .mode-back-leave-to {
+      transform: none;
+    }
+  }
 }
 
 @media (max-height: 850px) {
