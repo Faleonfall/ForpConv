@@ -2,7 +2,9 @@ import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from "vue";
 import {
   SLAB_TYPE_PAUSE_MS,
   groupSlabOptions,
+  moveSlabFlow,
   moveSlabSpot,
+  slabFlowColumns,
   slabMatch,
   slabSpotOf,
   type SlabMove,
@@ -24,6 +26,8 @@ export function useSlabSelect(
   const root = useTemplateRef<HTMLElement>("slabRoot");
   const panel = useTemplateRef<HTMLElement>("slabPanel");
   const isOpen = ref(false);
+  // Columns a plain list spreads over, measured each time the panel opens
+  const flowColumns = ref(1);
   // Option the keyboard or pointer rests on while the panel is open
   const activeId = ref("");
 
@@ -49,7 +53,14 @@ export function useSlabSelect(
     isOpen.value = true;
     activeId.value = picked.value?.id ?? "";
     document.addEventListener("pointerdown", handleOutside);
-    void nextTick(() => panel.value?.focus({ preventScroll: true }));
+    // Runs before paint, so the list never shows in the wrong shape
+    void nextTick(() => {
+      const width =
+        panel.value?.querySelector<HTMLElement>(".slab-group")?.clientWidth ??
+        0;
+      flowColumns.value = slabFlowColumns(getOptions().length, width);
+      panel.value?.focus({ preventScroll: true });
+    });
   };
 
   const toggle = (): void => {
@@ -86,6 +97,13 @@ export function useSlabSelect(
     !event.altKey;
 
   const moveFrom = (id: string, move: SlabMove): string => {
+    if (!hasGroups.value) {
+      const options = getOptions();
+      const index = options.findIndex((option) => option.id === id);
+      if (index < 0) return id;
+      const next = moveSlabFlow(options.length, index, move, flowColumns.value);
+      return options[next]?.id ?? id;
+    }
     const spot = slabSpotOf(groups.value, id);
     if (!spot) return id;
     const next = moveSlabSpot(groups.value, spot, move);
@@ -135,6 +153,7 @@ export function useSlabSelect(
 
   return {
     isOpen,
+    flowColumns,
     activeId,
     groups,
     hasGroups,

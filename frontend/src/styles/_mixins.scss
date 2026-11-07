@@ -20,6 +20,21 @@ $snap: cubic-bezier(0.3, 1.35, 0.5, 1);
   color: var(--color-on-slab);
 }
 
+// A slab that follows the theme, ink when dark and a warm tint when light
+@mixin tint-slab($edge: 4px) {
+  background: var(--color-tint);
+  border-left: $edge solid var(--color-accent);
+  color: var(--color-on-tint);
+}
+
+// A slab in a status color, success warning or danger, its edge and text in
+// that color over the status tint
+@mixin status-slab($status, $edge: 5px) {
+  background: var(--color-#{$status}-tint);
+  border-left: $edge solid var(--color-#{$status});
+  color: var(--color-#{$status});
+}
+
 // Small uppercase label above a value, like the select cells
 @mixin cell-label {
   font-size: 0.7rem;

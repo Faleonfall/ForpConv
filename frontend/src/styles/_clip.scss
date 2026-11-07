@@ -19,7 +19,7 @@ $trim-border: 3px;
   max-height: 240px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-panel-border);
-  background: var(--color-black);
+  background: var(--color-media);
 }
 
 // Timeline track. Handles hang outside the selection, so the track keeps a
@@ -55,7 +55,7 @@ $trim-border: 3px;
   position: absolute;
   top: 0;
   bottom: 0;
-  background: color-mix(in srgb, var(--color-black) 60%, transparent);
+  background: var(--color-scrim);
   pointer-events: none;
 }
 
@@ -143,7 +143,7 @@ $trim-border: 3px;
   margin-left: -1px;
   border-radius: 1px;
   background: var(--color-text);
-  box-shadow: 0 0 4px color-mix(in srgb, var(--color-black) 50%, transparent);
+  box-shadow: 0 0 4px var(--color-drop-shadow);
   cursor: ew-resize;
 }
 
@@ -243,15 +243,13 @@ $trim-border: 3px;
   color: var(--color-text-soft);
 }
 
-// Same ink slab as the upload error, with a warning edge
+// Same slab as the upload error, in the warning color
 .clip-hint {
   width: fit-content;
   max-width: 100%;
   margin: 0 auto;
   padding: 10px 18px 10px 14px;
-  background: var(--color-slab);
-  border-left: 5px solid var(--color-warning);
-  color: var(--color-warning);
+  @include status-slab(warning);
   font-weight: 600;
   @include cut-box;
 }

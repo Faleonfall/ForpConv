@@ -19,7 +19,7 @@
 .form-input {
   width: 100%;
   padding: 14px 16px;
-  background: color-mix(in srgb, var(--color-black) 20%, transparent);
+  background: var(--color-field);
   border: 1px solid var(--color-panel-border);
   border-left-width: 4px;
   border-radius: var(--radius-sm);
@@ -39,7 +39,6 @@
 
 // Flat track with a leaning block for a thumb
 .form-range {
-  -webkit-appearance: none;
   appearance: none;
   width: 100%;
   height: 6px;
@@ -54,7 +53,6 @@
 }
 
 .form-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
   appearance: none;
   width: 12px;
   height: 22px;
@@ -62,7 +60,7 @@
   background: var(--color-accent);
   cursor: pointer;
   border: 2px solid var(--color-slab);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-black) 30%, transparent);
+  box-shadow: 0 0 10px var(--color-drop-shadow);
   transform: skewX($cut);
   transition: transform 0.12s $snap;
 }

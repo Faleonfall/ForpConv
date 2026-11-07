@@ -13,6 +13,11 @@ export default defineConfig({
     // dev server never starts unnoticed.
     strictPort: true,
   },
+  // The dependency scan skips worker code, so gifsicle would be found on the
+  // first GIF shrink and force a full reload in the middle of a conversion
+  optimizeDeps: {
+    include: ["gifsicle-wasm"],
+  },
   test: {
     projects: [
       {

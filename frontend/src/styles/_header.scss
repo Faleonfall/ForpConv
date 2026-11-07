@@ -54,7 +54,8 @@
   font-style: italic;
   background: var(--gradient-accent);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
   letter-spacing: -0.5px;
   // Italic overhangs its box, a little room keeps the last letter whole
   padding-right: 4px;
@@ -68,7 +69,7 @@
 .header-badge {
   @include icon-label(8px);
   padding: 6px 14px 6px 10px;
-  @include slab(3px);
+  @include tint-slab(3px);
   @include cut-box;
   font-size: 0.8rem;
   font-weight: 600;

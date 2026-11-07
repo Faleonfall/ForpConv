@@ -55,7 +55,7 @@
 
 // Ink slab with the accent edge, the quieter action
 .btn-secondary {
-  @include slab(4px);
+  @include tint-slab(4px);
 }
 
 .btn-secondary:hover:not(:disabled) {

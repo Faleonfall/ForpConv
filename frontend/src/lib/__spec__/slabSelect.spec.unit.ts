@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   groupSlabOptions,
+  moveSlabFlow,
   moveSlabSpot,
+  slabFlowColumns,
   slabMatch,
   slabSpotOf,
   type SlabOption,
@@ -82,6 +84,37 @@ describe("moveSlabSpot", () => {
       column: 1,
       row: 1,
     });
+  });
+});
+
+describe("slabFlowColumns", () => {
+  it("keeps a short list in one column however wide", () => {
+    expect(slabFlowColumns(3, 900)).toBe(1);
+    expect(slabFlowColumns(4, 900)).toBe(1);
+  });
+
+  it("splits a long list into even rows", () => {
+    expect(slabFlowColumns(6, 800)).toBe(3);
+    expect(slabFlowColumns(8, 800)).toBe(4);
+  });
+
+  it("falls back to one column without room", () => {
+    expect(slabFlowColumns(6, 0)).toBe(1);
+  });
+});
+
+describe("moveSlabFlow", () => {
+  it("steps one option sideways and a whole row up or down", () => {
+    expect(moveSlabFlow(6, 1, "right", 3)).toBe(2);
+    expect(moveSlabFlow(6, 1, "left", 3)).toBe(0);
+    expect(moveSlabFlow(6, 1, "down", 3)).toBe(4);
+    expect(moveSlabFlow(6, 4, "up", 3)).toBe(1);
+  });
+
+  it("stays put past either end", () => {
+    expect(moveSlabFlow(6, 0, "left", 3)).toBe(0);
+    expect(moveSlabFlow(6, 4, "down", 3)).toBe(4);
+    expect(moveSlabFlow(6, 5, "right", 3)).toBe(5);
   });
 });
 

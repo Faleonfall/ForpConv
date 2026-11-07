@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 const {
   isOpen,
+  flowColumns,
   activeId,
   groups,
   hasGroups,
@@ -62,7 +63,7 @@ const uid = useId();
         v-if="isOpen"
         ref="slabPanel"
         class="slab-panel"
-        :class="{ 'slab-panel-wide': hasGroups }"
+        :class="hasGroups ? 'slab-panel-wide' : 'slab-panel-flow'"
         role="listbox"
         tabindex="-1"
         :aria-label="label"
@@ -70,7 +71,12 @@ const uid = useId();
         @keydown="handlePanelKeydown"
       >
         <div class="slab-panel-inner">
-          <div v-for="group in groups" :key="group.name" class="slab-group">
+          <div
+            v-for="group in groups"
+            :key="group.name"
+            class="slab-group"
+            :style="{ '--slab-columns': flowColumns }"
+          >
             <div v-if="hasGroups" class="slab-group-name">{{ group.name }}</div>
             <div
               v-for="option in group.options"

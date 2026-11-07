@@ -1,6 +1,11 @@
 // Typed letters gather into one search until a pause this long
 export const SLAB_TYPE_PAUSE_MS = 700;
 
+// A plain list this short reads best as one column
+const SLAB_FLOW_SINGLE_MAX = 4;
+// Narrowest column that still fits labels like Original (12.5 fps)
+const SLAB_FLOW_COLUMN_PX = 160;
+
 export interface SlabOption {
   id: string;
   label: string;
@@ -63,6 +68,32 @@ export function moveSlabSpot(
   const target = groups[next];
   if (!target) return spot;
   return { column: next, row: move === "down" ? 0 : target.options.length - 1 };
+}
+
+// Columns for a plain list in a panel this wide, rows kept even so six
+// options split three and three instead of five and one
+export function slabFlowColumns(count: number, width: number): number {
+  if (count <= SLAB_FLOW_SINGLE_MAX) return 1;
+  const fit = Math.max(1, Math.floor(width / SLAB_FLOW_COLUMN_PX));
+  return Math.ceil(count / Math.ceil(count / fit));
+}
+
+// A plain list laid out row by row, left and right step one option, up and
+// down a whole row, a move past either end stays put
+export function moveSlabFlow(
+  length: number,
+  index: number,
+  move: SlabMove,
+  columns: number,
+): number {
+  const steps: Record<SlabMove, number> = {
+    left: -1,
+    right: 1,
+    up: -columns,
+    down: columns,
+  };
+  const next = index + steps[move];
+  return next >= 0 && next < length ? next : index;
 }
 
 // First option whose label starts with the typed letters, else contains them

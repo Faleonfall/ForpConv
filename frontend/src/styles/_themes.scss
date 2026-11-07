@@ -1,41 +1,46 @@
+// Every color the app paints. Each theme sets its palette and the few
+// strengths that differ, the shared roles at the bottom derive the rest.
+// Stylesheets read only these roles, never raw colors.
+
 @use "mixins" as *;
 
 @mixin dark-theme {
   color-scheme: dark;
 
+  // Palette
   --color-background: #10151d;
   --color-background-end: #172332;
   --color-text: #f4efe7;
   --color-text-soft: #c7d2de;
-
   --color-accent: #f7b267;
   --color-accent-strong: #f4845f;
   --color-on-accent: #10151d;
-  // Ink of the slabs and drop panels, darker than the page so they read as cut out
+  // Ink of the slabs, darker than the page so they read as cut out
   --color-slab: #05080c;
   --color-on-slab: #f4efe7;
   --color-slab-muted: #7d8794;
-
   --color-panel-base: #0b1118;
-  --color-success-base: #70e0b3;
-  --color-error-base: #ff7c7c;
+  // Lines and track washes, light on the dark page
+  --color-line: var(--color-white);
+  --color-shade: var(--color-black);
   --color-glow: #ffa666;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #f87171;
 
+  // Strengths that differ by theme
   --color-panel-background: #{fade(color-panel-base, 58%)};
-  --color-panel-border: #{fade(color-white, 10%)};
-  --color-panel-glow: #{fade(color-accent, 12%)};
-
-  --color-card-border: #{fade(color-white, 8%)};
   --color-card-background: #{fade(color-white, 3%)};
-
-  --color-success-border: #{fade(color-success-base, 28%)};
-  --color-error-border: #{fade(color-error-base, 30%)};
-
   --color-surface-hover: #{fade(color-white, 8%)};
-  --color-slider-track: #{fade(color-white, 10%)};
-  --color-slider-track-hover: #{fade(color-white, 18%)};
-  --color-scrollbar-thumb: #{fade(color-white, 15%)};
-  --color-scrollbar-thumb-hover: #{fade(color-white, 30%)};
+  --color-inset: #{fade(color-black, 15%)};
+  --color-field: #{fade(color-black, 22%)};
+  --color-field-focus: #{fade(color-black, 45%)};
+  // Wide slabs and status slabs stay ink like the picks
+  --color-tint: var(--color-slab);
+  --color-on-tint: var(--color-on-slab);
+  --color-success-tint: var(--color-slab);
+  --color-warning-tint: var(--color-slab);
+  --color-danger-tint: var(--color-slab);
 
   --gradient-app-background:
     radial-gradient(
@@ -48,7 +53,6 @@
       var(--color-background) 0%,
       var(--color-background-end) 100%
     );
-
   --gradient-card:
     linear-gradient(
       180deg,
@@ -57,13 +61,7 @@
     ),
     var(--color-card-background);
 
-  --gradient-accent: linear-gradient(
-    135deg,
-    var(--color-accent),
-    var(--color-accent-strong)
-  );
-
-  --shadow-panel: 0 24px 80px #{fade(color-black, 18%)};
+  --shadow-panel: 0 24px 80px #{fade(color-shade, 18%)};
   --shadow-button: 0 14px 30px #{fade(color-accent-strong, 22%)};
   --shadow-button-hover: 0 18px 36px #{fade(color-accent-strong, 30%)};
   --shadow-button-active: 0 8px 18px #{fade(color-accent-strong, 22%)};
@@ -74,40 +72,40 @@
 @mixin light-theme {
   color-scheme: light;
 
+  // Palette
   --color-background: #f7efe5;
   --color-background-end: #eaf2f4;
   --color-text: #18212d;
   --color-text-soft: #5a6675;
-
   --color-accent: #b95f2d;
   --color-accent-strong: #d06f45;
   --color-on-accent: #fffaf3;
   --color-slab: #18212d;
   --color-on-slab: #fffaf3;
   --color-slab-muted: #8b96a3;
-
   --color-panel-base: #fffcf6;
-  --color-ink: #2d3949;
-  --color-success-base: #189067;
-  --color-error-base: #c54848;
+  // Lines and track washes, dark ink on the light page
+  --color-line: #2d3949;
+  --color-shade: #392d23;
   --color-glow: #ffbd79;
-  --color-shadow: #392d23;
+  // Darker than the dark theme's so text stays readable on a light tint
+  --color-success: #189067;
+  --color-warning: #b45309;
+  --color-danger: #c54848;
 
+  // Strengths that differ by theme
   --color-panel-background: #{fade(color-panel-base, 72%)};
-  --color-panel-border: #{fade(color-ink, 13%)};
-  --color-panel-glow: #{fade(color-accent, 11%)};
-
-  --color-card-border: #{fade(color-ink, 11%)};
   --color-card-background: #{fade(color-white, 58%)};
-
-  --color-success-border: #{fade(color-success-base, 28%)};
-  --color-error-border: #{fade(color-error-base, 28%)};
-
   --color-surface-hover: #{fade(color-white, 86%)};
-  --color-slider-track: #{fade(color-black, 10%)};
-  --color-slider-track-hover: #{fade(color-black, 18%)};
-  --color-scrollbar-thumb: #{fade(color-black, 15%)};
-  --color-scrollbar-thumb-hover: #{fade(color-black, 30%)};
+  --color-inset: #{fade(color-line, 5%)};
+  --color-field: #{fade(color-white, 70%)};
+  --color-field-focus: var(--color-white);
+  // A dark block weighs on the light page, wide slabs take a tint instead
+  --color-tint: #{fade(color-accent, 12%)};
+  --color-on-tint: var(--color-text);
+  --color-success-tint: #{fade(color-success, 12%)};
+  --color-warning-tint: #{fade(color-warning, 12%)};
+  --color-danger-tint: #{fade(color-danger, 12%)};
 
   --gradient-app-background:
     radial-gradient(
@@ -120,7 +118,6 @@
       var(--color-background) 0%,
       var(--color-background-end) 100%
     );
-
   --gradient-card:
     linear-gradient(
       180deg,
@@ -129,13 +126,7 @@
     ),
     var(--color-card-background);
 
-  --gradient-accent: linear-gradient(
-    135deg,
-    var(--color-accent),
-    var(--color-accent-strong)
-  );
-
-  --shadow-panel: 0 24px 80px #{fade(color-shadow, 14%)};
+  --shadow-panel: 0 24px 80px #{fade(color-shade, 14%)};
   --shadow-button: 0 14px 30px #{fade(color-accent, 20%)};
   --shadow-button-hover: 0 18px 36px #{fade(color-accent, 28%)};
   --shadow-button-active: 0 8px 18px #{fade(color-accent, 18%)};
@@ -160,4 +151,32 @@
 
 :root[data-theme="light"] {
   @include light-theme;
+}
+
+// Shared roles, they resolve against whichever palette the root carries
+:root {
+  --color-panel-border: #{fade(color-line, 12%)};
+  --color-card-border: #{fade(color-line, 10%)};
+  --color-panel-glow: #{fade(color-accent, 12%)};
+  // Accent wash under a file dragged over the dropzone
+  --color-accent-wash: #{fade(color-accent, 8%)};
+  // Option the pointer rests on inside an ink panel
+  --color-slab-hover: #{fade(color-on-slab, 7%)};
+
+  --color-slider-track: #{fade(color-line, 10%)};
+  --color-slider-track-hover: #{fade(color-line, 18%)};
+  --color-scrollbar-thumb: #{fade(color-line, 15%)};
+  --color-scrollbar-thumb-hover: #{fade(color-line, 30%)};
+
+  // Read by script through getComputedStyle for the waveform
+  --color-wave: var(--color-slab-muted);
+  --color-wave-progress: var(--color-accent);
+  --color-wave-cursor: var(--color-accent-strong);
+  --color-wave-region: #{fade(color-wave-progress, 15%)};
+
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-accent-strong)
+  );
 }

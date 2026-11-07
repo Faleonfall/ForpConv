@@ -1,4 +1,7 @@
-// Theme independent values. Theme colors live in _themes.scss.
+// Values that stay the same in every theme. Theme colors live in _themes.scss.
+
+@use "mixins" as *;
+
 :root {
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
@@ -7,21 +10,15 @@
 
   --color-black: #000;
   --color-white: #fff;
-  --color-positive: #10b981;
-  --color-warning: #f59e0b;
-  --color-error-text: #f87171;
 
-  --color-inset: color-mix(in srgb, var(--color-black) 15%, transparent);
-
-  // Read by script through getComputedStyle for the waveform
-  --color-wave: var(--color-slab-muted);
-  --color-wave-progress: var(--color-accent);
-  --color-wave-cursor: var(--color-accent-strong);
-  --color-wave-region: color-mix(
-    in srgb,
-    var(--color-wave-progress) 15%,
-    transparent
-  );
+  // Behind video and image previews, letterboxing stays black in any theme
+  --color-media: var(--color-black);
+  // Dims the frames outside the trimmed range
+  --color-scrim: #{fade(color-black, 60%)};
+  // Light stripes running over the accent fill of a progress bar
+  --color-stripe: #{fade(color-white, 22%)};
+  // Small lift under handles and the playhead
+  --color-drop-shadow: #{fade(color-black, 35%)};
 
   // Near square, the cut shapes carry the look instead of soft corners
   --radius-sm: 2px;

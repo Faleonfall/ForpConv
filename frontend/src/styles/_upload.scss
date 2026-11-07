@@ -26,17 +26,17 @@
 .upload-dropzone-dragover {
   border-style: solid;
   border-color: var(--color-accent-strong);
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  background: var(--color-accent-wash);
   box-shadow: var(--shadow-accent-glow);
 }
 
-// Ink slab with the cloud upright inside, it jumps when a file hovers over
+// Slab with the cloud upright inside, it jumps when a file hovers over
 .upload-icon {
   @include flex-center;
   width: 76px;
   height: 64px;
   margin-bottom: 22px;
-  @include slab(5px);
+  @include tint-slab(5px);
   color: var(--color-accent);
   @include cut-box;
   transition: transform 0.22s $snap;
@@ -98,19 +98,17 @@
 }
 
 .upload-format-image {
-  color: var(--color-positive);
+  color: var(--color-success);
 }
 
-// Ink slab with a red edge, it slams in with a shake
+// Danger slab, it slams in with a shake
 .upload-error {
   @include icon-label(10px);
   width: fit-content;
   max-width: 100%;
   margin: 16px auto 0;
   padding: 10px 18px 10px 14px;
-  background: var(--color-slab);
-  border-left: 5px solid var(--color-error-text);
-  color: var(--color-error-text);
+  @include status-slab(danger);
   font-size: 0.85rem;
   font-weight: 600;
   @include cut-box;

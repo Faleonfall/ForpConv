@@ -21,7 +21,7 @@
   @include flex-center;
   width: 100%;
   max-height: 240px;
-  background: var(--color-black);
+  background: var(--color-media);
   border-radius: var(--radius-sm);
   overflow: hidden;
   margin-bottom: 16px;
@@ -129,7 +129,7 @@
   background: var(--gradient-accent);
   color: var(--color-on-accent);
   border: none;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-black) 15%, transparent);
+  box-shadow: 0 2px 8px var(--color-drop-shadow);
 }
 
 .trimmer-play:hover,
@@ -200,7 +200,7 @@
 }
 
 .trimmer-stat-length {
-  color: var(--color-positive);
+  color: var(--color-success);
 }
 
 .trimmer-settings-form {
@@ -233,7 +233,7 @@
 .trimmer-fade-input {
   width: 50px;
   height: 19px;
-  background: color-mix(in srgb, var(--color-black) 25%, transparent);
+  background: var(--color-field);
   border: 1px solid var(--color-panel-border);
   color: var(--color-text);
   font-family: var(--font-sans);
@@ -245,18 +245,19 @@
   outline: none;
   line-height: 1;
   transition: all 0.2s ease;
-  -moz-appearance: textfield;
+  // A plain field without the number spinner
+  appearance: textfield;
 }
 
 .trimmer-fade-input::-webkit-outer-spin-button,
 .trimmer-fade-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 .trimmer-fade-input:focus {
   border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-black) 45%, transparent);
+  background: var(--color-field-focus);
   box-shadow: 0 0 8px var(--color-panel-glow);
 }
 
