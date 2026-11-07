@@ -1,3 +1,34 @@
+// The one lean every cut shape shares, cells, slabs, panels and buttons
+$cut: -10deg;
+// Overshooting ease behind every slam and slide
+$slam: cubic-bezier(0.2, 1.6, 0.4, 1);
+$snap: cubic-bezier(0.3, 1.35, 0.5, 1);
+
+// Leans a box at the cut, its content wrapper leans back upright
+@mixin cut-box {
+  transform: skewX($cut);
+}
+
+@mixin cut-face {
+  transform: skewX(-$cut);
+}
+
+// Ink block with the accent edge, the base of every slab
+@mixin slab($edge: 5px) {
+  background: var(--color-slab);
+  border-left: $edge solid var(--color-accent);
+  color: var(--color-on-slab);
+}
+
+// Small uppercase label above a value, like the select cells
+@mixin cell-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
 // A token at the given opacity
 @function fade($token, $percent) {
   @return color-mix(in srgb, var(--#{$token}) $percent, transparent);

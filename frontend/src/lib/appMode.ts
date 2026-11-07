@@ -1,4 +1,3 @@
-import { type TargetFormat } from "./formatCatalog";
 import { kindListLabel } from "./fileValidation";
 import { type MediaKind } from "./mediaKind";
 
@@ -21,12 +20,16 @@ export interface ModeCopy {
   heroSubtitle: string;
   uploadSubtitle: string;
   progressTitle: string;
+  failedTitle: string;
+  // Button that leaves a failed run for the step before it
+  backLabel: string;
   kinds: MediaKind[];
 }
 
 export interface DownloadCopy {
   heading: string;
-  text: string;
+  // Line under the heading, only where it adds a next step
+  text?: string;
   buttonLabel: string;
   previewLabel: string;
 }
@@ -39,6 +42,8 @@ export const MODE_COPY: Record<AppMode, ModeCopy> = {
       "Trim and convert audio or video files into M4R iPhone ringtones.",
     uploadSubtitle: "Supports MP3, WAV, M4A, FLAC, MP4, MOV, and more",
     progressTitle: "Creating Ringtone",
+    failedTitle: "Ringtone Failed",
+    backLabel: "Back to Trimming",
     kinds: ["audio", "video"],
   },
   convert: {
@@ -49,6 +54,8 @@ export const MODE_COPY: Record<AppMode, ModeCopy> = {
     uploadSubtitle:
       "Supports MP3, FLAC, MP4, WebM, GIF, PNG, JPG, HEIC, and more",
     progressTitle: "Converting File",
+    failedTitle: "Conversion Failed",
+    backLabel: "Pick Another Format",
     kinds: ["audio", "video", "image"],
   },
 };
@@ -60,6 +67,13 @@ export const RINGTONE_DOWNLOAD_COPY: DownloadCopy = {
   text: "The M4R file is ready. Download and transfer it to the iPhone.",
   buttonLabel: "Download Ringtone File",
   previewLabel: "Preview Tone",
+};
+
+// The download card already shows the file name and type
+export const CONVERT_DOWNLOAD_COPY: DownloadCopy = {
+  heading: "File Converted!",
+  buttonLabel: "Download File",
+  previewLabel: "Preview",
 };
 
 export function modeIndex(mode: AppMode): number {
@@ -91,13 +105,4 @@ export function acceptFor(kinds: MediaKind[]): string {
   const types = kinds.map((kind) => `${kind}/*`);
   if (kinds.includes("image")) types.push(".heic", ".heif");
   return types.join(",");
-}
-
-export function convertDownloadCopy(target: TargetFormat): DownloadCopy {
-  return {
-    heading: "File Converted!",
-    text: `The ${target.extension.toUpperCase()} file is ready to download.`,
-    buttonLabel: "Download File",
-    previewLabel: "Preview",
-  };
 }

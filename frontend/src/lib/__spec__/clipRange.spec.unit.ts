@@ -8,6 +8,7 @@ import {
   clipPreviewFailedText,
   defaultClipRange,
   filmstripTimes,
+  frameArgs,
   isFullClip,
   moveClipEnd,
   moveClipStart,
@@ -30,6 +31,13 @@ describe("clipLimitsFor", () => {
     expect(clipLimitsFor(findTarget("webp"))).toEqual(FREE);
     expect(FREE).toEqual({ maxSeconds: null, defaultSeconds: null });
     expect(clipLimitsFor(undefined)).toEqual(FREE);
+  });
+
+  it("keeps a whole GIF under the cap by default", () => {
+    const limits = clipLimitsFor(findTarget("video-gif"), true);
+
+    expect(defaultClipRange(8, limits)).toEqual({ start: 0, end: 8 });
+    expect(defaultClipRange(45, limits)).toEqual({ start: 0, end: 30 });
   });
 });
 
@@ -188,5 +196,11 @@ describe("trimArgs", () => {
 
   it("adds nothing for the whole file", () => {
     expect(trimArgs(null)).toEqual([]);
+  });
+
+  it("seeks to a still frame, the first one needs no seek", () => {
+    expect(frameArgs(2.5)).toEqual(["-ss", "2.5"]);
+    expect(frameArgs(0)).toEqual([]);
+    expect(frameArgs(null)).toEqual([]);
   });
 });

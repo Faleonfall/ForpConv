@@ -53,7 +53,9 @@ const { isDragOver, errorMessage, triggerFileSelect, onDrop, onFileChange } =
       <h2 class="upload-title">{{ uploadTitle(kinds) }}</h2>
       <p class="upload-subtitle">{{ subtitle }}</p>
 
-      <button class="btn btn-primary" type="button">Choose File</button>
+      <button class="btn btn-primary" type="button">
+        <span class="btn-face">Choose File</span>
+      </button>
     </div>
 
     <!-- Supported Formats Badge Panel -->

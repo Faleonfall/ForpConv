@@ -19,7 +19,9 @@
 }
 
 .picker-file-name {
-  @include display-text(1.5rem);
+  @include display-text(1.6rem, 800);
+  font-style: italic;
+  padding-right: 4px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -30,7 +32,7 @@
   color: var(--color-text-soft);
 }
 
-// Sits between the selects and Convert, the card gap would push it too far
+// Sits close above Convert, the card gap alone would leave it floating
 .picker-estimate {
   margin: -12px 0;
   font-size: 0.85rem;
@@ -44,6 +46,13 @@
 
 .picker-preview {
   @include flex-center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker-note {
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
 }
 
 .picker-image {
@@ -54,8 +63,33 @@
   border: 1px solid var(--color-panel-border);
 }
 
+// Select cells side by side, stacked on a phone
 .picker-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0 16px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+// Convert cut at the same angle as the cells, the size switch beside it
+.picker-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.picker-convert {
+  flex: 1;
+}
+
+.picker-convert .btn-face {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 480px) {
+  .picker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quality-switch {
+    width: 150px;
+  }
 }

@@ -1,10 +1,33 @@
-import { trimArgs, type ClipRange } from "./clipRange";
-import { findQuality, findWidth, type TargetFormat } from "./formatCatalog";
+import { frameArgs, trimArgs, type ClipRange } from "./clipRange";
+import {
+  findQuality,
+  findWidth,
+  isStillImage,
+  type TargetFormat,
+} from "./formatCatalog";
 import { formatFileSize } from "./ringtoneDisplay";
 
 // Encoders that hold the asked bitrate closely enough to predict the size.
 // Opus drops far below it on quiet audio, WAV depends on the source.
 const STEADY_BITRATE_TARGETS = ["mp3", "m4a", "ogg"];
+
+// Silent H.264 the browser can play and seek, so a GIF gets a timeline
+export const TIMELINE_NAME = "timeline.mp4";
+const TIMELINE_ARGS = [
+  "-an",
+  "-c:v",
+  "libx264",
+  "-preset",
+  "ultrafast",
+  "-crf",
+  "28",
+  "-pix_fmt",
+  "yuv420p",
+  "-vf",
+  "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+  "-movflags",
+  "+faststart",
+];
 
 export interface FormatChoice {
   targetId: string;
@@ -15,6 +38,12 @@ export interface FormatChoice {
   lossy: boolean;
   // Part of the file to keep, null for all of it
   clip: ClipRange | null;
+  // Moment a still image is taken from, null for the first frame
+  frameTime: number | null;
+}
+
+export function timelineArgs(inputName: string): string[] {
+  return ["-i", inputName, ...TIMELINE_ARGS, TIMELINE_NAME];
 }
 
 export function outputFileName(target: TargetFormat): string {
@@ -27,7 +56,12 @@ export function buildConvertArgs(
   inputName: string,
   clip: ClipRange | null = null,
   widthId = "",
+  frameTime: number | null = null,
 ): string[] {
+  const seek = isStillImage(target) ? frameArgs(frameTime) : trimArgs(clip);
+  // A GIF has no index to seek in, so it decodes from the start and drops
+  // what comes before the seek point
+  const seeksOutput = inputName.toLowerCase().endsWith(".gif");
   // The original frame rate is no catalog entry, so it adds no fps filter
   const quality = findQuality(target, qualityId);
   const width = findWidth(target, widthId);
@@ -37,9 +71,10 @@ export function buildConvertArgs(
     (filter): filter is string => Boolean(filter),
   );
   return [
-    ...trimArgs(clip),
+    ...(seeksOutput ? [] : seek),
     "-i",
     inputName,
+    ...(seeksOutput ? seek : []),
     ...target.codecArgs,
     ...(filters.length > 0 ? ["-vf", filters.join(",")] : []),
     ...(quality?.args ?? []),

@@ -14,56 +14,116 @@
     border-color 0.3s ease;
 }
 
+// The logo leads back to the upload screen
 .header-logo {
   @include icon-label(12px);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
 }
 
+.header-logo:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+// Leaning gradient block, the note stays upright inside it
 .header-logo-icon {
   @include flex-center;
-  width: 38px;
+  width: 40px;
   height: 38px;
-  border-radius: 10px;
   background: var(--gradient-accent);
   box-shadow: var(--shadow-accent-glow);
   color: var(--color-on-accent);
-  font-weight: 800;
-  font-family: var(--font-display);
+  @include cut-box;
+  transition: transform 0.18s $snap;
+}
+
+.header-logo-icon > svg {
+  @include cut-face;
+}
+
+.header-logo:hover .header-logo-icon {
+  transform: skewX($cut) translateX(-3px) rotate(-6deg);
 }
 
 .header-logo-text {
-  @include display-text(1.25rem);
+  @include display-text(1.35rem, 800);
+  font-style: italic;
   background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
+  // Italic overhangs its box, a little room keeps the last letter whole
+  padding-right: 4px;
 }
 
 .header-actions {
-  @include icon-label(16px);
+  @include icon-label(12px);
 }
 
+// Ink chip at the cut
 .header-badge {
   @include icon-label(8px);
-  font-size: 0.85rem;
-  color: var(--color-text-soft);
+  padding: 6px 14px 6px 10px;
+  @include slab(3px);
+  @include cut-box;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.header-badge > * {
+  @include cut-face;
 }
 
 .header-badge-icon {
-  color: var(--color-accent-strong);
+  color: var(--color-accent);
 }
 
 .header-theme-toggle {
-  @include round-button(40px);
+  @include flex-center;
+  width: 40px;
+  height: 38px;
+  padding: 0;
   background: transparent;
-  border: 1px solid var(--color-panel-border);
+  border: 1.5px solid var(--color-panel-border);
   color: var(--color-text-soft);
-  transition: all 0.3s ease;
+  cursor: pointer;
+  @include cut-box;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.18s $snap;
+}
+
+.header-theme-toggle > * {
+  @include cut-face;
+}
+
+.header-theme-toggle:active {
+  transform: skewX($cut) scale(0.92);
+}
+
+// Letter sized to sit like the 18px icons beside it
+.header-theme-auto {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .header-theme-toggle:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
-  background: var(--color-card-background);
+}
+
+// Phones keep the theme button and logo, the badge has no room
+@media (max-width: 480px) {
+  .header-badge {
+    display: none;
+  }
 }
 
 @media (max-height: 850px) {

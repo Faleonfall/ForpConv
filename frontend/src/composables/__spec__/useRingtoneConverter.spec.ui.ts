@@ -172,17 +172,20 @@ describe("useRingtoneConverter conversion", () => {
     expect(seen).toBe(25);
   });
 
-  it("returns to trimming after a failed conversion", async () => {
+  it("holds a failed conversion until the user goes back", async () => {
     await renderReady();
     await converter.handleFileSelected(file);
     fake.ffmpeg.exec.mockRejectedValueOnce(new Error("bad input"));
-    vi.useFakeTimers();
 
     await converter.handleConversion(params);
 
-    expect(engine.status.value).toContain("Transcoding failed");
+    expect(engine.status.value).toBe("Please check the file and try again.");
+    expect(converter.failed.value).toBe(true);
     expect(converter.currentStep.value).toBe("converting");
-    vi.advanceTimersByTime(4000);
+
+    converter.handleBack();
+
+    expect(converter.failed.value).toBe(false);
     expect(converter.currentStep.value).toBe("trim");
   });
 

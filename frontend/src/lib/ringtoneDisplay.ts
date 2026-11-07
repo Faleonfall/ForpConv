@@ -1,4 +1,4 @@
-import { type Theme } from "./themeStorage";
+import { nextThemeChoice, type ThemeChoice } from "./themeStorage";
 
 // MM:SS.S
 export function formatTime(seconds: number): string {
@@ -30,6 +30,6 @@ export function ringtoneFileName(title: string): string {
   return `${title}.m4r`;
 }
 
-export function themeToggleTitle(theme: Theme): string {
-  return `Switch to ${theme === "dark" ? "light" : "dark"} theme`;
+export function themeToggleTitle(choice: ThemeChoice): string {
+  return `Switch to ${nextThemeChoice(choice)} theme`;
 }

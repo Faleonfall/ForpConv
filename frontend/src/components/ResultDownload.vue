@@ -38,7 +38,7 @@ const { baseName, extension, downloadName } = useFileRename(
         <CheckCircle2 :size="32" />
       </div>
       <h2 class="download-title">{{ copy.heading }}</h2>
-      <p class="download-text">{{ copy.text }}</p>
+      <p v-if="copy.text" class="download-text">{{ copy.text }}</p>
     </div>
 
     <!-- File Details Box -->
@@ -99,10 +99,12 @@ const { baseName, extension, downloadName } = useFileRename(
         :download="downloadName"
         class="btn btn-primary btn-tall btn-wide"
       >
-        <Download :size="20" /> {{ copy.buttonLabel }}
+        <span class="btn-face">
+          <Download :size="20" /> {{ copy.buttonLabel }}
+        </span>
       </a>
       <button class="btn btn-secondary btn-tall" @click="$emit('reset')">
-        Convert Another File
+        <span class="btn-face">Convert Another File</span>
       </button>
     </div>
   </div>

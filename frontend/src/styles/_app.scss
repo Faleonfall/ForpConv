@@ -22,10 +22,28 @@
   text-align: center;
 }
 
+// Heavy italic headline underlined by a slab that slams in after it
 .app-hero-title {
-  @include display-text(2.25rem, 800);
-  margin-bottom: 8px;
+  @include display-text(2.5rem, 800);
+  display: inline-block;
+  position: relative;
+  margin-bottom: 18px;
+  padding: 0 6px;
+  font-style: italic;
   letter-spacing: -0.5px;
+}
+
+.app-hero-title::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -8px;
+  height: 6px;
+  background: var(--gradient-accent);
+  transform: skewX($cut);
+  transform-origin: left;
+  animation: hero-bar 0.42s 0.12s $slam both;
 }
 
 .app-hero-subtitle {
@@ -33,6 +51,18 @@
   font-size: 1.05rem;
   max-width: 500px;
   margin: 0 auto;
+}
+
+@keyframes hero-bar {
+  from {
+    transform: skewX($cut) scaleX(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .app-hero-title {
+    font-size: 1.9rem;
+  }
 }
 
 // Tab switch, the content slides the way the indicator moves. Scoped under
@@ -51,17 +81,21 @@
   .mode-forward-enter-from,
   .mode-back-leave-to {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(-24px) skewX(8deg);
   }
 
   .mode-forward-leave-to,
   .mode-back-enter-from {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(24px) skewX(-8deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .app-hero-title::after {
+    animation: none;
+  }
+
   .app-main {
     .mode-forward-enter-active,
     .mode-forward-leave-active,

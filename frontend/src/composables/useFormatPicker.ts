@@ -1,9 +1,11 @@
 import { computed, ref, watch } from "vue";
 import { type ClipRange } from "../lib/clipRange";
+import { type SlabOption } from "../lib/slabSelect";
 import {
   defaultQualityFor,
   defaultTargetFor,
   findTarget,
+  isStillImage,
   qualitiesFor,
   targetGroupsFor,
 } from "../lib/formatCatalog";
@@ -19,6 +21,7 @@ export function useFormatPicker(
   getFile: () => File,
   getHasAudio: () => boolean | null,
   getFrameRate: () => number | null,
+  getTimelineFile: () => File | null,
   onConvert: (choice: FormatChoice) => void,
 ) {
   const kind = computed(() => mediaKindOf(getFile()) ?? "audio");
@@ -26,6 +29,17 @@ export function useFormatPicker(
   // Audio targets stay until a probe finds the video silent
   const groups = computed(() =>
     targetGroupsFor(kind.value, extension.value, getHasAudio() !== false),
+  );
+  // One list for the select, each target tagged with its column when there
+  // are several groups to tell apart
+  const formatOptions = computed<SlabOption[]>(() =>
+    groups.value.flatMap((group) =>
+      group.targets.map((option) => ({
+        id: option.id,
+        label: option.label,
+        ...(groups.value.length > 1 && { group: group.label }),
+      })),
+    ),
   );
   const targetId = ref(defaultTargetFor(kind.value, extension.value)?.id ?? "");
   const target = computed(() => findTarget(targetId.value));
@@ -42,12 +56,18 @@ export function useFormatPicker(
   const canCompress = computed(() => target.value?.lossyCompression === true);
   // Off by default, the best quality comes first
   const lossy = ref(false);
-  // Images have no timeline to cut
-  const canTrim = computed(() => kind.value !== "image");
-  // Images get a plain preview instead, a GIF animates in it by itself
+  // Audio and video play as they are, a GIF through its playable copy once
+  // FFmpeg made it, other images have no timeline
+  const timelineFile = computed(() =>
+    kind.value === "image" ? getTimelineFile() : getFile(),
+  );
+  const canTrim = computed(() => timelineFile.value !== null);
+  const isAnimatedSource = computed(() => extension.value === "gif");
+  // Images get a plain preview until then, a GIF animates in it by itself
   const imageUrl = useObjectUrl(getFile);
   const imageFailed = ref(false);
   const clip = ref<ClipRange | null>(null);
+  const frameTime = ref<number | null>(null);
   const clipSeconds = ref<number | null>(null);
   const sizeEstimate = computed(() =>
     target.value
@@ -86,6 +106,10 @@ export function useFormatPicker(
     clipSeconds.value = seconds;
   };
 
+  const handleFrame = (time: number): void => {
+    frameTime.value = time;
+  };
+
   // Some browsers can't show HEIC, the picker works without the picture
   const handleImageError = (): void => {
     imageFailed.value = true;
@@ -99,12 +123,15 @@ export function useFormatPicker(
       widthId: widthId.value,
       lossy: canCompress.value && lossy.value,
       clip: canTrim.value ? clip.value : null,
+      frameTime:
+        canTrim.value && isStillImage(target.value) ? frameTime.value : null,
     });
   };
 
   return {
     kind,
     groups,
+    formatOptions,
     targetId,
     target,
     qualities,
@@ -114,12 +141,15 @@ export function useFormatPicker(
     widthId,
     canCompress,
     lossy,
+    timelineFile,
     canTrim,
+    isAnimatedSource,
     imageUrl,
     imageFailed,
     sizeEstimate,
     handleClipChange,
     handleClipLength,
+    handleFrame,
     handleImageError,
     handleConvert,
   };

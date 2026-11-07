@@ -147,6 +147,21 @@ describe("useFormatConverter", () => {
     expect(converter.frameRate.value).toBe(12.5);
   });
 
+  it("renders a playable timeline for a GIF after the probe", async () => {
+    await renderReady();
+    const gif = new File(["x"], "loop.gif", { type: "image/gif" });
+
+    converter.handleFileSelected(gif);
+    expect(converter.isPreparingTimeline.value).toBe(true);
+
+    await vi.waitFor(() => expect(converter.timelineFile.value).not.toBeNull());
+    expect(converter.timelineFile.value?.type).toBe("video/mp4");
+    expect(converter.isPreparingTimeline.value).toBe(false);
+    expect(fake.ffmpeg.exec).toHaveBeenLastCalledWith(
+      expect.arrayContaining(["-i", "input.gif", "timeline.mp4"]),
+    );
+  });
+
   it("keeps the sound unknown when the probe fails", async () => {
     await renderReady();
     fake.ffmpeg.mount.mockRejectedValueOnce(new Error("no WORKERFS"));
@@ -178,6 +193,7 @@ describe("useFormatConverter conversion", () => {
       widthId: "640",
       lossy: false,
       clip: { start: 2, end: 7 },
+      frameTime: null,
     });
 
     expect(fake.ffmpeg.exec).toHaveBeenCalledWith(
@@ -205,6 +221,7 @@ describe("useFormatConverter conversion", () => {
       widthId: "800",
       lossy: true,
       clip: { start: 0, end: 5 },
+      frameTime: null,
     });
 
     expect(compressGif).toHaveBeenCalledOnce();
@@ -223,6 +240,7 @@ describe("useFormatConverter conversion", () => {
       widthId: "800",
       lossy: true,
       clip: { start: 0, end: 5 },
+      frameTime: null,
     });
 
     expect(converter.convertedBlob.value?.type).toBe("image/gif");
@@ -240,6 +258,7 @@ describe("useFormatConverter conversion", () => {
       widthId: "",
       lossy: false,
       clip: null,
+      frameTime: null,
     });
 
     expect(heicTo).toHaveBeenCalledOnce();
@@ -252,11 +271,10 @@ describe("useFormatConverter conversion", () => {
 });
 
 describe("useFormatConverter failure and reset", () => {
-  it("returns to the picker after a failed conversion", async () => {
+  it("holds a failed conversion until the user goes back", async () => {
     await renderReady();
     await selectProbed(clip);
     fake.ffmpeg.exec.mockRejectedValueOnce(new Error("bad input"));
-    vi.useFakeTimers();
 
     await converter.handleConversion({
       targetId: "webm",
@@ -264,10 +282,18 @@ describe("useFormatConverter failure and reset", () => {
       widthId: "",
       lossy: false,
       clip: null,
+      frameTime: null,
     });
 
-    expect(engine.status.value).toContain("Conversion failed");
-    vi.advanceTimersByTime(4000);
+    expect(engine.status.value).toBe(
+      "This file may not convert to that format.",
+    );
+    expect(converter.failed.value).toBe(true);
+    expect(converter.currentStep.value).toBe("converting");
+
+    converter.handleBack();
+
+    expect(converter.failed.value).toBe(false);
     expect(converter.currentStep.value).toBe("pick");
   });
 
@@ -280,6 +306,7 @@ describe("useFormatConverter failure and reset", () => {
       widthId: "",
       lossy: false,
       clip: null,
+      frameTime: null,
     });
 
     converter.handleReset();

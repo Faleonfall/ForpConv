@@ -23,8 +23,10 @@ export function useClipRange(
   getFile: () => File,
   getTarget: () => TargetFormat | undefined,
   isVideo: () => boolean,
+  isAnimatedSource: () => boolean,
   onChange: (clip: ClipRange | null) => void,
   onLength: (seconds: number | null) => void,
+  onFrame: (time: number) => void,
 ) {
   const media = useTemplateRef<HTMLMediaElement>("clipMedia");
   const mediaUrl = ref("");
@@ -37,7 +39,7 @@ export function useClipRange(
   // Once the user moves a handle, a format switch only clamps their range
   const isTouched = ref(false);
 
-  const limits = computed(() => clipLimitsFor(getTarget()));
+  const limits = computed(() => clipLimitsFor(getTarget(), isAnimatedSource()));
   const length = computed(() => range.value.end - range.value.start);
   const hint = computed(() => clipLengthHint(length.value, limits.value));
   const clip = computed(() =>
@@ -159,6 +161,8 @@ export function useClipRange(
     (next) => onLength(next),
     { immediate: true },
   );
+  // A still image is taken where the playhead stands
+  watch(playhead, (next) => onFrame(next), { immediate: true });
 
   onMounted(() => {
     mediaUrl.value = URL.createObjectURL(getFile());
@@ -174,6 +178,7 @@ export function useClipRange(
     duration,
     previewFailed,
     isPlaying,
+    playhead,
     range,
     limits,
     length,

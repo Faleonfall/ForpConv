@@ -3,7 +3,7 @@
 $tabs-padding: 4px;
 $tabs-gap: 4px;
 
-// Equal columns let one indicator slide between tabs by its index
+// Leaning frame, equal columns let one slab slide between tabs by its index
 .tabs {
   position: relative;
   display: inline-grid;
@@ -11,12 +11,13 @@ $tabs-gap: 4px;
   grid-auto-columns: 1fr;
   gap: $tabs-gap;
   padding: $tabs-padding;
-  margin-bottom: 20px;
-  border: 1px solid var(--color-panel-border);
-  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  border: 1.5px solid var(--color-panel-border);
   background: var(--color-inset);
+  @include cut-box;
 }
 
+// Accent slab that overshoots a little as it lands on the new tab
 .tabs-indicator {
   position: absolute;
   top: $tabs-padding;
@@ -26,23 +27,23 @@ $tabs-gap: 4px;
     (100% - #{$tabs-padding * 2} - #{$tabs-gap} * (var(--tab-count) - 1)) /
       var(--tab-count)
   );
-  border-radius: calc(var(--radius-md) - #{$tabs-padding});
   background: var(--gradient-accent);
   box-shadow: var(--shadow-button);
   transform: translateX(calc(var(--tab-index) * (100% + #{$tabs-gap})));
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.32s $snap;
 }
 
 .tabs-tab {
   position: relative;
-  padding: 8px 20px;
+  padding: 9px 24px;
   border: none;
-  border-radius: calc(var(--radius-md) - #{$tabs-padding});
   background: transparent;
   color: var(--color-text-soft);
-  @include display-text(0.95rem, 600);
+  @include display-text(1rem, 700);
+  font-style: italic;
   cursor: pointer;
-  transition: color 0.35s ease;
+  @include cut-face;
+  transition: color 0.2s ease;
 }
 
 .tabs-tab:hover {
@@ -52,6 +53,11 @@ $tabs-gap: 4px;
 .tabs-tab-active,
 .tabs-tab-active:hover {
   color: var(--color-on-accent);
+}
+
+.tabs-tab:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -14,18 +14,25 @@
   gap: 12px;
 }
 
+// Ink slab with a green edge, the check stamps in after the card lands
 .download-badge {
   @include flex-center;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-positive) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-positive) 30%, transparent);
-  color: var(--color-success-border);
+  width: 72px;
+  height: 60px;
+  background: var(--color-slab);
+  border-left: 5px solid var(--color-positive);
+  color: var(--color-positive);
+  @include cut-box;
+  animation: download-stamp 0.42s 0.1s $slam both;
+}
+
+.download-badge > svg {
+  @include cut-face;
 }
 
 .download-title {
-  @include display-text(1.5rem);
+  @include display-text(1.75rem, 800);
+  font-style: italic;
 }
 
 .download-text {
@@ -36,6 +43,7 @@
 .download-details {
   background: var(--color-inset);
   border: 1px solid var(--color-panel-border);
+  border-left: 4px solid var(--color-accent);
   border-radius: var(--radius-md);
   padding: 20px;
   display: flex;
@@ -49,11 +57,16 @@
 
 .download-file-icon {
   @include flex-center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  width: 50px;
+  height: 46px;
   background: var(--gradient-accent);
-  color: var(--color-white);
+  color: var(--color-on-accent);
+  @include cut-box;
+}
+
+.download-file-icon > svg {
+  @include cut-face;
 }
 
 .download-file-info {
@@ -122,15 +135,11 @@
 }
 
 .download-preview-label {
-  font-size: 0.75rem;
-  color: var(--color-text-soft);
-  text-transform: uppercase;
-  font-weight: 600;
+  @include cell-label;
 }
 
 .download-audio {
   width: 100%;
-  border-radius: 8px;
   filter: invert(0.9) hue-rotate(180deg);
 }
 
@@ -152,6 +161,19 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+@keyframes download-stamp {
+  from {
+    opacity: 0;
+    transform: skewX(-24deg) scale(1.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-badge {
+    animation: none;
+  }
 }
 
 @media (max-height: 850px) {

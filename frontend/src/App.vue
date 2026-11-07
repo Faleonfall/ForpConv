@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, watch } from "vue";
-import { Loader2, RotateCcw } from "@lucide/vue";
+import { RotateCcw } from "@lucide/vue";
 import AppHeader from "./components/AppHeader.vue";
 import AppFooter from "./components/AppFooter.vue";
 import ModeTabs from "./components/ModeTabs.vue";
+import ProgressPanel from "./components/ProgressPanel.vue";
 // Eager, the first screen anyway, and a lazy wrapper would render empty
 // while the tab transition animates it
 import FileUpload from "./components/FileUpload.vue";
@@ -12,10 +13,11 @@ import { useAppMode } from "./composables/useAppMode";
 import { useFfmpegEngine } from "./composables/useFfmpegEngine";
 import { useRingtoneConverter } from "./composables/useRingtoneConverter";
 import { useFormatConverter } from "./composables/useFormatConverter";
+import { useLeaveWarning } from "./composables/useLeaveWarning";
 import {
+  CONVERT_DOWNLOAD_COPY,
   MODE_COPY,
   RINGTONE_DOWNLOAD_COPY,
-  convertDownloadCopy,
 } from "./lib/appMode";
 import { ringtoneFileName } from "./lib/ringtoneDisplay";
 
@@ -29,7 +31,7 @@ const ResultDownload = defineAsyncComponent(
   () => import("./components/ResultDownload.vue"),
 );
 
-const { activeTheme, toggleTheme } = useTheme();
+const { themeChoice, toggleTheme } = useTheme();
 const { mode, direction, setMode } = useAppMode();
 
 const engine = useFfmpegEngine();
@@ -37,6 +39,12 @@ const { isReady, loadProgress, loadStatus, loadFailed, progress, status } =
   engine;
 const ringtone = useRingtoneConverter(engine);
 const converter = useFormatConverter(engine);
+// Either tab past its upload holds a file a reload would drop
+useLeaveWarning(
+  () =>
+    ringtone.currentStep.value !== "upload" ||
+    converter.currentStep.value !== "upload",
+);
 
 const copy = computed(() => MODE_COPY[mode.value]);
 const step = computed(() =>
@@ -51,6 +59,8 @@ const ringtoneUploadError = ringtone.uploadError;
 const convertFile = converter.selectedFile;
 const convertHasAudio = converter.hasAudio;
 const convertFrameRate = converter.frameRate;
+const convertTimeline = converter.timelineFile;
+const convertPreparingTimeline = converter.isPreparingTimeline;
 const convertedBlob = converter.convertedBlob;
 const convertedTarget = converter.convertedTarget;
 const convertedName = converter.convertedName;
@@ -58,15 +68,31 @@ const convertedName = converter.convertedName;
 // A rejection belongs to the pick that caused it, not to the next visit
 watch(mode, () => ringtone.clearUploadError());
 
+const activeFlow = () => (mode.value === "ringtone" ? ringtone : converter);
+
 const handleFileSelected = (file: File): void => {
-  const flow = mode.value === "ringtone" ? ringtone : converter;
-  void flow.handleFileSelected(file);
+  void activeFlow().handleFileSelected(file);
+};
+
+const flowFailed = computed(() => activeFlow().failed.value);
+
+// The logo drops the open file and returns to upload, a running conversion
+// can't be stopped halfway so it finishes first
+const handleHome = (): void => {
+  const flow = activeFlow();
+  if (flow.currentStep.value !== "converting" || flow.failed.value) {
+    flow.handleReset();
+  }
 };
 </script>
 
 <template>
   <!-- Header -->
-  <AppHeader :active-theme="activeTheme" @toggle="toggleTheme" />
+  <AppHeader
+    :theme-choice="themeChoice"
+    @toggle="toggleTheme"
+    @home="handleHome"
+  />
 
   <!-- Main Body Content -->
   <main class="app-main">
@@ -81,53 +107,22 @@ const handleFileSelected = (file: File): void => {
     </div>
 
     <!-- Loading FFmpeg Engine -->
-    <div v-if="!isReady" class="card progress-container">
-      <div class="progress-loader">
-        <svg class="progress-loader-svg" viewBox="0 0 36 36">
-          <circle class="progress-loader-bg" cx="18" cy="18" r="16"></circle>
-          <circle
-            class="progress-loader-fill"
-            cx="18"
-            cy="18"
-            r="16"
-            stroke-dasharray="100"
-            :stroke-dashoffset="100 - loadProgress"
-          ></circle>
-          <defs>
-            <linearGradient
-              id="loaderGradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop class="progress-gradient-start" offset="0%" />
-              <stop class="progress-gradient-end" offset="100%" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div class="progress-value">
-          <Loader2
-            v-if="loadProgress >= 99 && !loadFailed"
-            class="progress-spinner"
-            :size="24"
-          />
-          <template v-else>{{ loadProgress }}%</template>
-        </div>
-      </div>
-      <h2 class="progress-title">
-        {{ loadFailed ? "Engine Failed to Load" : "Initializing Engine" }}
-      </h2>
-      <p class="progress-text">{{ loadStatus }}</p>
+    <ProgressPanel
+      v-if="!isReady"
+      :percent="loadProgress"
+      :title="loadFailed ? 'Engine Failed to Load' : 'Initializing Engine'"
+      :text="loadStatus"
+      :failed="loadFailed"
+    >
       <button
         v-if="loadFailed"
         class="btn btn-primary progress-retry"
         type="button"
         @click="engine.loadEngine"
       >
-        <RotateCcw :size="18" /> Retry
+        <span class="btn-face"><RotateCcw :size="18" /> Retry</span>
       </button>
-    </div>
+    </ProgressPanel>
 
     <!-- Upload File -->
     <Transition
@@ -158,43 +153,29 @@ const handleFileSelected = (file: File): void => {
       :file="convertFile"
       :has-audio="convertHasAudio"
       :frame-rate="convertFrameRate"
+      :timeline-file="convertTimeline"
+      :preparing-timeline="convertPreparingTimeline"
       @convert="converter.handleConversion"
       @cancel="converter.handleCancel"
     />
 
     <!-- Transcoding -->
-    <div v-else-if="step === 'converting'" class="card progress-container">
-      <div class="progress-loader">
-        <svg class="progress-loader-svg" viewBox="0 0 36 36">
-          <circle class="progress-loader-bg" cx="18" cy="18" r="16"></circle>
-          <circle
-            class="progress-loader-fill"
-            cx="18"
-            cy="18"
-            r="16"
-            stroke-dasharray="100"
-            :stroke-dashoffset="100 - progress"
-          ></circle>
-          <defs>
-            <linearGradient
-              id="loaderGradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop class="progress-gradient-start" offset="0%" />
-              <stop class="progress-gradient-end" offset="100%" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div class="progress-value">{{ progress }}%</div>
-      </div>
-      <h2 class="progress-title">{{ copy.progressTitle }}</h2>
-      <p class="progress-text">
-        {{ status }}
-      </p>
-    </div>
+    <ProgressPanel
+      v-else-if="step === 'converting'"
+      :percent="progress"
+      :title="flowFailed ? copy.failedTitle : copy.progressTitle"
+      :text="status"
+      :failed="flowFailed"
+    >
+      <button
+        v-if="flowFailed"
+        class="btn btn-secondary progress-retry"
+        type="button"
+        @click="activeFlow().handleBack()"
+      >
+        <span class="btn-face">{{ copy.backLabel }}</span>
+      </button>
+    </ProgressPanel>
 
     <!-- Ringtone: Download -->
     <ResultDownload
@@ -217,7 +198,7 @@ const handleFileSelected = (file: File): void => {
       :blob="convertedBlob"
       :file-name="convertedName"
       :kind="convertedTarget.kind"
-      :copy="convertDownloadCopy(convertedTarget)"
+      :copy="CONVERT_DOWNLOAD_COPY"
       @reset="converter.handleReset"
     />
 

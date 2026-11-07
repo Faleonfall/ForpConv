@@ -129,15 +129,25 @@ describe("App ringtone conversion", () => {
     const user = userEvent.setup({ applyAccept: false });
     await openTrimmer(user);
     ffmpegFake.ffmpeg.exec.mockRejectedValueOnce(new Error("bad input"));
-    vi.useFakeTimers({ shouldAdvanceTime: true });
 
     await user.click(
       screen.getByRole("button", { name: /Create M4R Ringtone/ }),
     );
 
-    expect(await screen.findByText(/Transcoding failed/)).toBeInTheDocument();
-    vi.advanceTimersByTime(4000);
+    expect(await screen.findByText("Ringtone Failed")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Back to Trimming" }));
     expect(await screen.findByText("Customize Ringtone")).toBeInTheDocument();
+  });
+
+  it("returns to the upload from the logo", async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    await openTrimmer(user);
+
+    await user.click(screen.getByTitle("Back to start"));
+
+    expect(
+      await screen.findByText("Drop your audio or video file here"),
+    ).toBeInTheDocument();
   });
 
   it("keeps an unsupported file out of the trimmer", async () => {
@@ -167,10 +177,10 @@ describe("App format conversion", () => {
       container.querySelector<HTMLInputElement>('input[type="file"]')!,
       new File(["x"], "Holiday.mp4", { type: "video/mp4" }),
     );
-    await user.selectOptions(
-      await screen.findByLabelText("Convert To"),
-      "video-gif",
+    await user.click(
+      await screen.findByRole("button", { name: /^Convert To: / }),
     );
+    await user.click(screen.getByRole("option", { name: "GIF (animated)" }));
     await user.click(screen.getByRole("button", { name: /^Convert$/ }));
 
     expect(await screen.findByText("File Converted!")).toBeInTheDocument();
@@ -244,7 +254,9 @@ describe("App theme", () => {
     const user = userEvent.setup();
     const first = render(App);
 
-    await user.click(await screen.findByTitle("Switch to light theme"));
+    // A first visit follows the system, then steps to dark and light
+    await user.click(await screen.findByTitle("Switch to dark theme"));
+    await user.click(screen.getByTitle("Switch to light theme"));
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
 
     first.unmount();
@@ -252,7 +264,7 @@ describe("App theme", () => {
     render(App);
 
     expect(
-      await screen.findByTitle("Switch to dark theme"),
+      await screen.findByTitle("Switch to system theme"),
     ).toBeInTheDocument();
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });

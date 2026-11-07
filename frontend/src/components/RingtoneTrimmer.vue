@@ -55,7 +55,7 @@ const {
     <div class="trimmer-header">
       <h2 class="trimmer-title">Customize Ringtone</h2>
       <button class="btn btn-secondary btn-small" @click="$emit('cancel')">
-        Change File
+        <span class="btn-face">Change File</span>
       </button>
     </div>
 
@@ -260,7 +260,9 @@ const {
         :disabled="selectionDuration <= 0"
         @click="handleConvert"
       >
-        <Scissors :size="20" /> Create M4R Ringtone
+        <span class="btn-face">
+          <Scissors :size="20" /> Create M4R Ringtone
+        </span>
       </button>
     </div>
   </div>

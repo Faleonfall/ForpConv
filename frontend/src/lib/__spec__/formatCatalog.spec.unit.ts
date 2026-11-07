@@ -22,9 +22,10 @@ describe("targetGroupsFor", () => {
     expect(ids("audio")).not.toContain("mp4");
   });
 
-  it("offers video formats, GIF and audio extracts for video", () => {
+  it("offers video formats, GIF, stills and audio extracts for video", () => {
     expect(targetGroupsFor("video").map((group) => group.label)).toEqual([
       "Video",
+      "Still image",
       "Audio only",
     ]);
     expect(ids("video")).toEqual(
@@ -35,7 +36,9 @@ describe("targetGroupsFor", () => {
   it("drops the audio extracts for a silent video", () => {
     expect(
       targetGroupsFor("video", "mov", false).map((group) => group.label),
-    ).toEqual(["Video"]);
+    ).toEqual(["Video", "Still image"]);
+    expect(ids("video")).toContain("png");
+    expect(ids("video")).not.toContain("gif");
   });
 
   it("offers only image formats for a still image", () => {
@@ -53,10 +56,15 @@ describe("targetGroupsFor", () => {
     expect(ids("image", "gif")).toEqual(
       expect.arrayContaining(["png", "mp4", "webm", "video-webp"]),
     );
-    expect(ids("image", "gif")).not.toContain("video-gif");
     expect(
       targetGroupsFor("image", "gif")[0]?.targets.map((t) => t.id),
-    ).toEqual(["png", "jpg", "webp", "video-webp", "bmp", "tiff", "gif"]);
+    ).toEqual(["png", "jpg", "webp", "video-webp", "bmp", "tiff", "video-gif"]);
+  });
+
+  it("offers MOV with the MP4 streams for video and GIF", () => {
+    expect(findTarget("mov")?.codecArgs).toEqual(findTarget("mp4")?.codecArgs);
+    expect(ids("video")).toContain("mov");
+    expect(ids("image", "gif")).toContain("mov");
   });
 
   it("offers an animated WebP for video", () => {
@@ -73,6 +81,7 @@ describe("defaultTargetFor", () => {
 
   it("starts with the first format otherwise", () => {
     expect(defaultTargetFor("video", "mov")?.id).toBe("mp4");
+    expect(defaultTargetFor("video", "mp4")?.id).toBe("webm");
   });
 });
 

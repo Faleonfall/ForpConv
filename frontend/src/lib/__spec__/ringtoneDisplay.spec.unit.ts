@@ -52,8 +52,9 @@ describe("ringtoneFileName", () => {
 });
 
 describe("themeToggleTitle", () => {
-  it("names the other theme", () => {
+  it("names the next theme", () => {
     expect(themeToggleTitle("dark")).toBe("Switch to light theme");
-    expect(themeToggleTitle("light")).toBe("Switch to dark theme");
+    expect(themeToggleTitle("light")).toBe("Switch to system theme");
+    expect(themeToggleTitle("system")).toBe("Switch to dark theme");
   });
 });

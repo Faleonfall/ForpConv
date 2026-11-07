@@ -14,19 +14,17 @@
   --color-inset: color-mix(in srgb, var(--color-black) 15%, transparent);
 
   // Read by script through getComputedStyle for the waveform
-  --color-wave: #4f46e5;
-  --color-wave-progress: #a855f7;
-  --color-wave-cursor: #c084fc;
+  --color-wave: var(--color-slab-muted);
+  --color-wave-progress: var(--color-accent);
+  --color-wave-cursor: var(--color-accent-strong);
   --color-wave-region: color-mix(
     in srgb,
     var(--color-wave-progress) 15%,
     transparent
   );
 
-  --color-loader-start: #6366f1;
-  --color-loader-end: var(--color-wave-progress);
-
-  --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  // Near square, the cut shapes carry the look instead of soft corners
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
 }

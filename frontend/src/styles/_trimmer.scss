@@ -13,7 +13,8 @@
 }
 
 .trimmer-title {
-  @include display-text(1.5rem);
+  @include display-text(1.6rem, 800);
+  font-style: italic;
 }
 
 .trimmer-video {
@@ -101,14 +102,27 @@
   gap: 8px;
 }
 
+// Small leaning blocks, play in the accent and reset as an outline
 .trimmer-play,
 .trimmer-reset {
-  @include round-button(32px);
-  background: var(--color-surface-hover);
-  border: 1px solid var(--color-panel-border);
-  color: var(--color-text);
-  transition: all 0.2s ease;
+  @include flex-center;
+  width: 36px;
+  height: 30px;
   padding: 0;
+  border: 1.5px solid var(--color-panel-border);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  @include cut-box;
+  transition:
+    transform 0.18s $snap,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.trimmer-play > *,
+.trimmer-reset > * {
+  @include cut-face;
 }
 
 .trimmer-play {
@@ -118,8 +132,14 @@
   box-shadow: 0 2px 8px color-mix(in srgb, var(--color-black) 15%, transparent);
 }
 
-.trimmer-play:hover {
-  transform: scale(1.08);
+.trimmer-play:hover,
+.trimmer-reset:hover {
+  transform: skewX($cut) translateY(-2px);
+}
+
+.trimmer-play:active,
+.trimmer-reset:active {
+  transform: skewX($cut) scale(0.9);
 }
 
 .trimmer-play-icon {
@@ -129,7 +149,6 @@
 .trimmer-reset:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
-  background: var(--color-surface-hover);
 }
 
 .trimmer-controls-panel {
@@ -138,25 +157,38 @@
   gap: 24px;
 }
 
+// Three cells like the select cells, a label over an ink slab value
 .trimmer-stats {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
-  background: var(--color-inset);
-  border-radius: var(--radius-sm);
-  text-align: center;
+  gap: 12px;
+}
+
+.trimmer-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px 12px;
+  border: 1.5px solid var(--color-panel-border);
+  @include cut-box;
+}
+
+.trimmer-stats > div > * {
+  @include cut-face;
 }
 
 .trimmer-stat-label {
-  font-size: 0.75rem;
-  color: var(--color-text-soft);
-  margin-bottom: 4px;
+  @include cell-label;
 }
 
 .trimmer-stat-value {
+  padding: 4px 14px 4px 10px;
+  @include slab(4px);
   font-family: var(--font-display);
   font-weight: 700;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
 }
 
 .trimmer-stat-start {
@@ -231,6 +263,19 @@
 @media (max-width: 600px) {
   .trimmer-controls-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .trimmer-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trimmer-play,
+  .trimmer-reset {
+    transition: none;
   }
 }
 

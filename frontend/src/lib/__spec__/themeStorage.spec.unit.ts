@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { nextTheme, parseStoredTheme } from "../themeStorage";
+import {
+  nextThemeChoice,
+  parseStoredTheme,
+  resolveTheme,
+} from "../themeStorage";
 
 describe("parseStoredTheme", () => {
   it("accepts a stored theme", () => {
@@ -13,9 +17,18 @@ describe("parseStoredTheme", () => {
   });
 });
 
-describe("nextTheme", () => {
-  it("flips the theme", () => {
-    expect(nextTheme("dark")).toBe("light");
-    expect(nextTheme("light")).toBe("dark");
+describe("nextThemeChoice", () => {
+  it("steps dark, light, system and around", () => {
+    expect(nextThemeChoice("dark")).toBe("light");
+    expect(nextThemeChoice("light")).toBe("system");
+    expect(nextThemeChoice("system")).toBe("dark");
+  });
+});
+
+describe("resolveTheme", () => {
+  it("keeps a fixed choice and follows the device on system", () => {
+    expect(resolveTheme("dark", true)).toBe("dark");
+    expect(resolveTheme("system", true)).toBe("light");
+    expect(resolveTheme("system", false)).toBe("dark");
   });
 });

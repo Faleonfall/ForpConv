@@ -21,6 +21,10 @@ const ANIMATION_LIMITS: ClipLimits = {
   maxSeconds: MAX_ANIMATION_SECONDS,
   defaultSeconds: DEFAULT_ANIMATION_SECONDS,
 };
+const ANIMATED_SOURCE_LIMITS: ClipLimits = {
+  maxSeconds: MAX_ANIMATION_SECONDS,
+  defaultSeconds: null,
+};
 
 export interface ClipRange {
   start: number;
@@ -32,8 +36,13 @@ export interface ClipLimits {
   defaultSeconds: number | null;
 }
 
-export function clipLimitsFor(target: TargetFormat | undefined): ClipLimits {
-  return target?.animated ? ANIMATION_LIMITS : NO_LIMITS;
+// An animation in keeps all of itself by default, it's short already
+export function clipLimitsFor(
+  target: TargetFormat | undefined,
+  isAnimatedSource = false,
+): ClipLimits {
+  if (!target?.animated) return NO_LIMITS;
+  return isAnimatedSource ? ANIMATED_SOURCE_LIMITS : ANIMATION_LIMITS;
 }
 
 export function defaultClipRange(
@@ -42,7 +51,10 @@ export function defaultClipRange(
 ): ClipRange {
   return {
     start: 0,
-    end: Math.min(duration, limits.defaultSeconds ?? duration),
+    end: Math.min(
+      duration,
+      limits.defaultSeconds ?? limits.maxSeconds ?? duration,
+    ),
   };
 }
 
@@ -170,6 +182,11 @@ export function clipPreviewFailedText(limits: ClipLimits): string {
 export function trimArgs(clip: ClipRange | null): string[] {
   if (!clip) return [];
   return ["-ss", seconds(clip.start), "-t", seconds(clip.end - clip.start)];
+}
+
+// The frame a still image is taken from, the first one when unset
+export function frameArgs(time: number | null): string[] {
+  return time === null || time <= 0 ? [] : ["-ss", seconds(time)];
 }
 
 function seconds(value: number): string {

@@ -15,13 +15,13 @@ Trims audio or video into iPhone M4R ringtones and converts audio, video, and im
 
 ## 🔁 Convert
 
-Switch to the Convert tab to change a file from one format to another. Pick the target format and a quality, trim audio or video to the part you need, then download the result. Animated GIF and WebP start on the first 5 seconds and stop at 30.
+Switch to the Convert tab to change a file from one format to another. Pick the target format and a quality, trim audio, video, or a GIF to the part you need, or pick the frame for a still image, then download the result. Animated GIF and WebP start on the first 5 seconds and stop at 30.
 
-| Input                | Output                                                                           |
-| -------------------- | -------------------------------------------------------------------------------- |
-| Audio                | MP3, M4A, OGG, Opus, FLAC, WAV                                                   |
-| Video                | MP4, WebM, animated GIF, animated WebP, or any audio format to extract the sound |
-| Image, HEIC included | PNG, JPG, WebP, BMP, TIFF, GIF                                                   |
-| Animated GIF         | any image format, MP4, WebM, animated WebP                                       |
+| Input                | Output                                                                                                            |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Audio                | MP3, M4A, OGG, Opus, FLAC, WAV                                                                                    |
+| Video                | MP4, WebM, MOV, animated GIF, animated WebP, a still image of any frame, or any audio format to extract the sound |
+| Image, HEIC included | PNG, JPG, WebP, BMP, TIFF, GIF                                                                                    |
+| Animated GIF         | any image format, MP4, WebM, MOV, animated WebP                                                                   |
 
 Video encoding runs single threaded in the browser, so long clips take a while.

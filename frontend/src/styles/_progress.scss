@@ -1,64 +1,100 @@
 @use "mixins" as *;
 
+$bar-height: 18px;
+// Square tile holding two 45° stripe periods, so tiles meet without a seam
+$stripe-tile: 22.63px;
+
 .progress-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 40px 20px;
+  padding: 40px 32px;
 }
 
-.progress-loader {
-  position: relative;
-  width: 96px;
-  height: 96px;
-  margin-bottom: 24px;
-}
-
-.progress-loader-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.progress-loader-bg {
-  fill: none;
-  stroke: color-mix(in srgb, var(--color-white) 5%, transparent);
-  stroke-width: 6;
-}
-
-.progress-loader-fill {
-  fill: none;
-  stroke: url(#loaderGradient);
-  stroke-width: 6;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.3s ease;
-}
-
-.progress-gradient-start {
-  stop-color: var(--color-loader-start);
-}
-
-.progress-gradient-end {
-  stop-color: var(--color-loader-end);
-}
-
+// Big italic count above the bar
 .progress-value {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  @include display-text(1.15rem);
-  color: var(--color-text);
+  @include display-text(3.25rem, 800);
+  font-style: italic;
+  line-height: 1;
+  margin-bottom: 14px;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-variant-numeric: tabular-nums;
+  padding-right: 6px;
 }
 
-.progress-spinner {
-  color: var(--color-accent);
-  animation: spin 1s linear infinite;
+.progress-value span {
+  font-size: 0.5em;
+}
+
+// Leaning ink track, the fill runs diagonal stripes while work goes on
+.progress-bar {
+  position: relative;
+  width: min(100%, 420px);
+  height: $bar-height;
+  margin-bottom: 24px;
+  overflow: hidden;
+  @include slab(5px);
+  @include cut-box;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 8px,
+      color-mix(in srgb, var(--color-white) 22%, transparent) 8px 16px
+    ),
+    var(--gradient-accent);
+  background-size:
+    $stripe-tile $stripe-tile,
+    100% 100%;
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  animation: progress-stripes 0.6s linear infinite;
+}
+
+// A failed run turns the track itself into one thin red line. A red fill
+// over the ink track would leave hairline seams along the leaning edges.
+.progress-failed .progress-bar {
+  height: 6px;
+  margin-top: 6px;
+  margin-bottom: 30px;
+  border-left: none;
+  background: var(--color-error-text);
+  animation: progress-fail-sweep 0.3s ease;
+  transform-origin: left;
+}
+
+.progress-failed .progress-bar-fill {
+  display: none;
+}
+
+// Warning sign on an ink slab in place of the count, it stamps in
+.progress-alert {
+  @include flex-center;
+  width: 78px;
+  height: 64px;
+  margin-bottom: 18px;
+  background: var(--color-slab);
+  border-left: 5px solid var(--color-error-text);
+  color: var(--color-error-text);
+  @include cut-box;
+  animation: progress-stamp 0.4s $slam;
+}
+
+.progress-alert > svg {
+  @include cut-face;
 }
 
 .progress-title {
-  @include display-text(1.25rem);
+  @include display-text(1.35rem, 800);
+  font-style: italic;
   margin-bottom: 8px;
 }
 
@@ -73,4 +109,34 @@
 
 .progress-retry {
   margin-top: 20px;
+}
+
+@keyframes progress-fail-sweep {
+  from {
+    transform: skewX($cut) scaleX(0);
+  }
+}
+
+@keyframes progress-stamp {
+  from {
+    opacity: 0;
+    transform: skewX(-24deg) scale(1.6);
+  }
+}
+
+@keyframes progress-stripes {
+  to {
+    background-position:
+      $stripe-tile 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar-fill,
+  .progress-alert,
+  .progress-failed .progress-bar {
+    animation: none;
+    transition: none;
+  }
 }

@@ -1,33 +1,39 @@
 <script setup lang="ts">
 import { Sparkles, Music, Sun, Moon } from "@lucide/vue";
 import { themeToggleTitle } from "../lib/ringtoneDisplay";
-import { type Theme } from "../lib/themeStorage";
+import { type ThemeChoice } from "../lib/themeStorage";
 
-defineProps<{ activeTheme: Theme }>();
-defineEmits<{ toggle: [] }>();
+defineProps<{ themeChoice: ThemeChoice }>();
+defineEmits<{ toggle: []; home: [] }>();
 </script>
 
 <template>
   <header class="header">
-    <div class="header-logo">
-      <div class="header-logo-icon">
+    <button
+      type="button"
+      class="header-logo"
+      title="Back to start"
+      @click="$emit('home')"
+    >
+      <span class="header-logo-icon">
         <Music :size="18" />
-      </div>
+      </span>
       <span class="header-logo-text">forpConv</span>
-    </div>
+    </button>
     <div class="header-actions">
       <div class="header-badge">
         <Sparkles class="header-badge-icon" :size="14" />
         <span>100% Client-Side</span>
       </div>
-      <!-- Theme Switcher Button -->
+      <!-- Theme Switcher Button, A follows the system -->
       <button
         class="header-theme-toggle"
-        :title="themeToggleTitle(activeTheme)"
+        :title="themeToggleTitle(themeChoice)"
         @click="$emit('toggle')"
       >
-        <Sun v-if="activeTheme === 'light'" :size="18" />
-        <Moon v-else :size="18" />
+        <Sun v-if="themeChoice === 'light'" :size="18" />
+        <Moon v-else-if="themeChoice === 'dark'" :size="18" />
+        <span v-else class="header-theme-auto" aria-hidden="true">A</span>
       </button>
     </div>
   </header>

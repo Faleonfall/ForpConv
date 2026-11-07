@@ -6,7 +6,50 @@ import {
   estimateOutputBytes,
   outputFileName,
   sizeEstimateLabel,
+  timelineArgs,
 } from "../formatConversion";
+
+describe("buildConvertArgs seeking", () => {
+  it("takes a still from the chosen moment of a video", () => {
+    const args = buildConvertArgs(
+      findTarget("png")!,
+      "",
+      "input.mp4",
+      { start: 1, end: 4 },
+      "",
+      3.5,
+    );
+
+    expect(args.slice(0, 4)).toEqual(["-ss", "3.5", "-i", "input.mp4"]);
+    expect(args).not.toContain("-t");
+  });
+
+  it("trims a GIF after reading it, it has no index to seek in", () => {
+    const args = buildConvertArgs(
+      findTarget("video-gif")!,
+      "original",
+      "input.gif",
+      { start: 1, end: 3 },
+    );
+
+    expect(args.slice(0, 6)).toEqual([
+      "-i",
+      "input.gif",
+      "-ss",
+      "1",
+      "-t",
+      "2",
+    ]);
+  });
+
+  it("renders a silent seekable MP4 for the GIF timeline", () => {
+    const args = timelineArgs("input.gif");
+
+    expect(args.slice(0, 3)).toEqual(["-i", "input.gif", "-an"]);
+    expect(args).toEqual(expect.arrayContaining(["libx264", "yuv420p"]));
+    expect(args.at(-1)).toBe("timeline.mp4");
+  });
+});
 
 describe("buildConvertArgs", () => {
   it("adds the codec and the chosen bitrate", () => {

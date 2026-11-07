@@ -1,20 +1,36 @@
 @use "mixins" as *;
 
+// Every button leans at the cut, its face wrapper keeps the label upright
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 16px 32px;
+  padding: 14px 32px;
   border: none;
-  border-radius: var(--radius-sm);
-  @include display-text(1rem);
+  border-radius: 0;
   color: var(--color-on-accent);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
   text-decoration: none;
+  @include cut-box;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-face {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  @include display-text(1rem);
+  font-style: italic;
+  @include cut-face;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 3px;
 }
 
 .btn:disabled {
@@ -26,28 +42,25 @@
 .btn-primary {
   background: var(--gradient-accent);
   box-shadow: var(--shadow-button);
-  color: var(--color-on-accent);
 }
 
 .btn-primary:hover:not(:disabled) {
   box-shadow: var(--shadow-button-hover);
-  transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(1px);
   box-shadow: var(--shadow-button-active);
+  transform: skewX($cut) translateY(1px);
 }
 
+// Ink slab with the accent edge, the quieter action
 .btn-secondary {
-  background: color-mix(in srgb, var(--color-white) 5%, transparent);
-  border: 1px solid var(--color-panel-border);
-  color: var(--color-text);
+  @include slab(4px);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-white) 10%, transparent);
-  border-color: color-mix(in srgb, var(--color-white) 15%, transparent);
+  border-left-width: 8px;
+  transform: skewX($cut) translateX(2px);
 }
 
 .btn-tall {
@@ -56,10 +69,22 @@
 
 .btn-wide {
   width: 100%;
-  font-size: 1.05rem;
+}
+
+.btn-wide .btn-face {
+  font-size: 1.1rem;
 }
 
 .btn-small {
-  padding: 8px 16px;
+  padding: 8px 18px;
+}
+
+.btn-small .btn-face {
   font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
 }

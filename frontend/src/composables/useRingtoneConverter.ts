@@ -13,6 +13,8 @@ import { mediaKindOf } from "../lib/mediaKind";
 
 export function useRingtoneConverter(engine: FfmpegEngine) {
   const currentStep = ref<WorkflowStep>("upload");
+  // The last run stopped on an error and waits on the converting step
+  const failed = ref(false);
 
   // Active states
   const selectedFile = ref<File | null>(null);
@@ -56,6 +58,7 @@ export function useRingtoneConverter(engine: FfmpegEngine) {
     if (!selectedFile.value) return;
 
     currentStep.value = "converting";
+    failed.value = false;
     ringtoneTitle.value = params.title;
 
     try {
@@ -76,13 +79,15 @@ export function useRingtoneConverter(engine: FfmpegEngine) {
       currentStep.value = "download";
     } catch (error) {
       console.error("Transcoding failed:", error);
-      engine.status.value =
-        "Transcoding failed. Please check your file formatting.";
-      // Reset back to trim after error display
-      setTimeout(() => {
-        currentStep.value = "trim";
-      }, 4000);
+      engine.status.value = "Please check the file and try again.";
+      failed.value = true;
     }
+  };
+
+  // Leaves a failed run with the file and trim still in place
+  const handleBack = (): void => {
+    failed.value = false;
+    currentStep.value = "trim";
   };
 
   const handleCancel = (): void => {
@@ -108,5 +113,7 @@ export function useRingtoneConverter(engine: FfmpegEngine) {
     handleConversion,
     handleCancel,
     handleReset,
+    handleBack,
+    failed,
   };
 }

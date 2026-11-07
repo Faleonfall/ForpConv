@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ArrowRightLeft, ChevronDown } from "@lucide/vue";
+import { ArrowRightLeft } from "@lucide/vue";
 import ClipRange from "./ClipRange.vue";
+import QualitySwitch from "./QualitySwitch.vue";
+import SlabSelect from "./SlabSelect.vue";
 import { useFormatPicker } from "../composables/useFormatPicker";
 import { type FormatChoice } from "../lib/formatConversion";
 import { formatFileSize } from "../lib/ringtoneDisplay";
@@ -11,6 +13,9 @@ const props = defineProps<{
   hasAudio?: boolean | null;
   // Null while unknown, a known rate adds an Original option
   frameRate?: number | null;
+  // Playable copy of a GIF for the timeline, null until it's made
+  timelineFile?: File | null;
+  preparingTimeline?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -19,7 +24,7 @@ const emit = defineEmits<{
 }>();
 
 const {
-  groups,
+  formatOptions,
   targetId,
   target,
   qualities,
@@ -29,18 +34,21 @@ const {
   widthId,
   canCompress,
   lossy,
-  canTrim,
+  timelineFile,
+  isAnimatedSource,
   imageUrl,
   imageFailed,
   sizeEstimate,
   handleClipChange,
   handleClipLength,
+  handleFrame,
   handleImageError,
   handleConvert,
 } = useFormatPicker(
   () => props.file,
   () => props.hasAudio ?? null,
   () => props.frameRate ?? null,
+  () => props.timelineFile ?? null,
   (choice) => emit("convert", choice),
 );
 </script>
@@ -53,100 +61,60 @@ const {
         <div class="picker-file-size">{{ formatFileSize(file.size) }}</div>
       </div>
       <button class="btn btn-secondary btn-small" @click="$emit('cancel')">
-        Change File
+        <span class="btn-face">Change File</span>
       </button>
     </div>
 
-    <div v-if="!canTrim && imageUrl && !imageFailed" class="picker-preview">
+    <ClipRange
+      v-if="timelineFile"
+      :file="timelineFile"
+      :target="target"
+      :animated-source="isAnimatedSource"
+      @change="handleClipChange"
+      @length="handleClipLength"
+      @frame="handleFrame"
+    />
+
+    <div v-else-if="imageUrl && !imageFailed" class="picker-preview">
       <img
         :src="imageUrl"
         :alt="file.name"
         class="picker-image"
         @error="handleImageError"
       />
+      <p v-if="preparingTimeline" class="picker-note">Preparing timeline...</p>
     </div>
-
-    <ClipRange
-      v-else-if="canTrim"
-      :file="file"
-      :target="target"
-      @change="handleClipChange"
-      @length="handleClipLength"
-    />
 
     <div class="picker-grid">
-      <div class="form-group">
-        <label class="form-label" for="target-format">
-          <span>Convert To</span>
-        </label>
-        <div class="form-select-wrap">
-          <select id="target-format" v-model="targetId" class="form-select">
-            <optgroup
-              v-for="group in groups"
-              :key="group.label"
-              :label="group.label"
-            >
-              <option
-                v-for="option in group.targets"
-                :key="option.id"
-                :value="option.id"
-              >
-                {{ option.label }}
-              </option>
-            </optgroup>
-          </select>
-          <ChevronDown class="form-select-chevron" :size="18" />
-        </div>
-      </div>
-
-      <div v-if="qualities.length > 0" class="form-group">
-        <label class="form-label" for="target-quality">
-          <span>{{ qualityLabel }}</span>
-        </label>
-        <div class="form-select-wrap">
-          <select id="target-quality" v-model="qualityId" class="form-select">
-            <option
-              v-for="quality in qualities"
-              :key="quality.id"
-              :value="quality.id"
-            >
-              {{ quality.label }}
-            </option>
-          </select>
-          <ChevronDown class="form-select-chevron" :size="18" />
-        </div>
-      </div>
-
-      <div v-if="widths.length > 0" class="form-group">
-        <label class="form-label" for="target-width">
-          <span>Width</span>
-        </label>
-        <div class="form-select-wrap">
-          <select id="target-width" v-model="widthId" class="form-select">
-            <option v-for="width in widths" :key="width.id" :value="width.id">
-              {{ width.label }}
-            </option>
-          </select>
-          <ChevronDown class="form-select-chevron" :size="18" />
-        </div>
-      </div>
+      <SlabSelect
+        v-model="targetId"
+        label="Convert To"
+        :options="formatOptions"
+      />
+      <SlabSelect
+        v-if="qualities.length > 0"
+        v-model="qualityId"
+        :label="qualityLabel"
+        :options="qualities"
+      />
+      <SlabSelect
+        v-if="widths.length > 0"
+        v-model="widthId"
+        label="Width"
+        :options="widths"
+      />
     </div>
-
-    <label v-if="canCompress" class="form-switch">
-      <input v-model="lossy" type="checkbox" class="form-switch-input" />
-      <span class="form-switch-track" aria-hidden="true"></span>
-      <span class="form-switch-text">
-        <span class="form-switch-label">Smaller file</span>
-        <span class="form-switch-hint"
-          >Lossy compression, adds slight noise</span
-        >
-      </span>
-    </label>
 
     <p v-if="sizeEstimate" class="picker-estimate">{{ sizeEstimate }}</p>
 
-    <button class="btn btn-primary btn-tall btn-wide" @click="handleConvert">
-      <ArrowRightLeft :size="20" /> Convert
-    </button>
+    <div class="picker-actions">
+      <button
+        class="btn btn-primary btn-tall picker-convert"
+        @click="handleConvert"
+      >
+        <span class="btn-face"> <ArrowRightLeft :size="20" /> Convert </span>
+      </button>
+      <QualitySwitch v-if="canCompress" v-model="lossy" />
+    </div>
   </div>
 </template>

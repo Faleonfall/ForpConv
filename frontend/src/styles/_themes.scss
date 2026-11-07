@@ -11,6 +11,10 @@
   --color-accent: #f7b267;
   --color-accent-strong: #f4845f;
   --color-on-accent: #10151d;
+  // Ink of the slabs and drop panels, darker than the page so they read as cut out
+  --color-slab: #05080c;
+  --color-on-slab: #f4efe7;
+  --color-slab-muted: #7d8794;
 
   --color-panel-base: #0b1118;
   --color-success-base: #70e0b3;
@@ -78,6 +82,9 @@
   --color-accent: #b95f2d;
   --color-accent-strong: #d06f45;
   --color-on-accent: #fffaf3;
+  --color-slab: #18212d;
+  --color-on-slab: #fffaf3;
+  --color-slab-muted: #8b96a3;
 
   --color-panel-base: #fffcf6;
   --color-ink: #2d3949;

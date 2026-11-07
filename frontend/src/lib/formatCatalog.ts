@@ -13,6 +13,29 @@ const SINGLE_IMAGE_ARGS = ["-frames:v", "1", "-update", "1"];
 // Even dimensions keep x264 with yuv420p from failing on odd sizes
 const EVEN_SIZE_FILTER = "scale=trunc(iw/2)*2:trunc(ih/2)*2";
 
+// faststart puts the index up front so playback starts before the download
+// ends, MP4 and MOV both take it
+const H264_ARGS = [
+  "-c:v",
+  "libx264",
+  "-preset",
+  "ultrafast",
+  "-pix_fmt",
+  "yuv420p",
+  "-c:a",
+  "aac",
+  "-b:a",
+  "192k",
+  "-movflags",
+  "+faststart",
+];
+
+const H264_QUALITIES: QualityOption[] = [
+  { id: "low", label: "Low (small file)", args: ["-crf", "32"] },
+  { id: "medium", label: "Medium", args: ["-crf", "26"] },
+  { id: "high", label: "High (large file)", args: ["-crf", "20"] },
+];
+
 // A palette pass gives GIFs far fewer banding artifacts. The palette favors
 // moving areas, ordered dither keeps LZW compression working where error
 // diffusion noise defeats it, and only the changed rectangle of each frame
@@ -100,26 +123,9 @@ export const VIDEO_TARGETS: TargetFormat[] = [
     extension: "mp4",
     mime: "video/mp4",
     kind: "video",
-    codecArgs: [
-      "-c:v",
-      "libx264",
-      "-preset",
-      "ultrafast",
-      "-pix_fmt",
-      "yuv420p",
-      "-c:a",
-      "aac",
-      "-b:a",
-      "192k",
-      "-movflags",
-      "+faststart",
-    ],
+    codecArgs: H264_ARGS,
     filters: EVEN_SIZE_FILTER,
-    qualities: [
-      { id: "low", label: "Low (small file)", args: ["-crf", "32"] },
-      { id: "medium", label: "Medium", args: ["-crf", "26"] },
-      { id: "high", label: "High (large file)", args: ["-crf", "20"] },
-    ],
+    qualities: H264_QUALITIES,
     defaultQualityId: "high",
   },
   {
@@ -145,6 +151,19 @@ export const VIDEO_TARGETS: TargetFormat[] = [
       { id: "medium", label: "Medium", args: ["-b:v", "1M"] },
       { id: "high", label: "High (large file)", args: ["-b:v", "2500k"] },
     ],
+    defaultQualityId: "high",
+  },
+  {
+    // Same streams as MP4 in the container Apple apps expect. It sits after
+    // WebM so an MP4 upload still defaults to a different codec.
+    id: "mov",
+    label: "MOV (H.264)",
+    extension: "mov",
+    mime: "video/quicktime",
+    kind: "video",
+    codecArgs: H264_ARGS,
+    filters: EVEN_SIZE_FILTER,
+    qualities: H264_QUALITIES,
     defaultQualityId: "high",
   },
   {
@@ -357,18 +376,24 @@ export function targetGroupsFor(
 ): TargetGroup[] {
   if (kind === "audio") return [{ label: "Audio", targets: AUDIO_TARGETS }];
   if (kind === "video") {
-    if (!hasAudio) return [{ label: "Video", targets: VIDEO_TARGETS }];
-    return [
-      { label: "Video", targets: VIDEO_TARGETS },
-      { label: "Audio only", targets: AUDIO_TARGETS },
-    ];
+    const video = { label: "Video", targets: VIDEO_TARGETS };
+    // A still GIF of one frame is a worse PNG, the animated one sits above
+    const stills = {
+      label: "Still image",
+      targets: IMAGE_TARGETS.filter((target) => target.id !== "gif"),
+    };
+    if (!hasAudio) return [video, stills];
+    return [video, stills, { label: "Audio only", targets: AUDIO_TARGETS }];
   }
   if (inputExtension === "gif") {
     // The animated WebP sits next to the still one, same loop at a fraction
-    // of the size
-    const images = IMAGE_TARGETS.flatMap((target) =>
-      target.id === "webp" ? [target, findTarget("video-webp")!] : [target],
-    );
+    // of the size. GIF to GIF keeps every frame, so it takes the animated
+    // target with its frame rate, width and lossy pass.
+    const images = IMAGE_TARGETS.flatMap((target) => {
+      if (target.id === "webp") return [target, findTarget("video-webp")!];
+      if (target.id === "gif") return [findTarget("video-gif")!];
+      return [target];
+    });
     return [
       { label: "Image", targets: images },
       {
@@ -398,6 +423,11 @@ export function defaultTargetFor(
   return (
     targets.find((target) => target.extension !== inputExtension) ?? targets[0]
   );
+}
+
+// One frame out, so a timeline picks the moment instead of a range
+export function isStillImage(target: TargetFormat | undefined): boolean {
+  return target?.kind === "image" && !target.animated;
 }
 
 export function findTarget(id: string): TargetFormat | undefined {

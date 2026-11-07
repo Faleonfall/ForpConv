@@ -1,13 +1,19 @@
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import {
+  LIGHT_SCHEME_QUERY,
   THEME_STORAGE_KEY,
-  nextTheme,
+  nextThemeChoice,
   parseStoredTheme,
+  resolveTheme,
   type Theme,
+  type ThemeChoice,
 } from "../lib/themeStorage";
 
 export function useTheme() {
+  const themeChoice = ref<ThemeChoice>("system");
   const activeTheme = ref<Theme>("dark");
+
+  let systemScheme: MediaQueryList | null = null;
 
   const applyTheme = (theme: Theme): void => {
     activeTheme.value = theme;
@@ -22,9 +28,15 @@ export function useTheme() {
       ?.setAttribute("content", background);
   };
 
-  const saveTheme = (theme: Theme): void => {
+  const applyChoice = (choice: ThemeChoice): void => {
+    themeChoice.value = choice;
+    applyTheme(resolveTheme(choice, systemScheme?.matches ?? false));
+  };
+
+  const saveChoice = (choice: ThemeChoice): void => {
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      if (choice === "system") localStorage.removeItem(THEME_STORAGE_KEY);
+      else localStorage.setItem(THEME_STORAGE_KEY, choice);
     } catch {
       // Storage unavailable (private mode, quota); ignore
     }
@@ -41,24 +53,27 @@ export function useTheme() {
     }
   };
 
+  // The device switching light and dark, eg at sunset, only counts on system
+  const handleSystemChange = (): void => {
+    if (themeChoice.value === "system") applyChoice("system");
+  };
+
   const toggleTheme = (): void => {
-    const theme = nextTheme(activeTheme.value);
-    applyTheme(theme);
-    saveTheme(theme);
+    const choice = nextThemeChoice(themeChoice.value);
+    applyChoice(choice);
+    saveChoice(choice);
   };
 
   onMounted(() => {
-    // Restore a saved choice, otherwise fall back to system prefers-color-scheme
-    const storedTheme = loadStoredTheme();
-    if (storedTheme) {
-      applyTheme(storedTheme);
-      return;
-    }
-    const systemPrefersLight = window.matchMedia(
-      "(prefers-color-scheme: light)",
-    ).matches;
-    applyTheme(systemPrefersLight ? "light" : "dark");
+    systemScheme = window.matchMedia(LIGHT_SCHEME_QUERY);
+    systemScheme.addEventListener("change", handleSystemChange);
+    // Restore a saved choice, otherwise follow the system
+    applyChoice(loadStoredTheme() ?? "system");
   });
 
-  return { activeTheme, toggleTheme };
+  onBeforeUnmount(() => {
+    systemScheme?.removeEventListener("change", handleSystemChange);
+  });
+
+  return { themeChoice, activeTheme, toggleTheme };
 }

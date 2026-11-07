@@ -6,27 +6,33 @@ import {
   clipPreviewFailedText,
   type ClipRange as Clip,
 } from "../lib/clipRange";
-import { type TargetFormat } from "../lib/formatCatalog";
+import { isStillImage, type TargetFormat } from "../lib/formatCatalog";
 import { mediaKindOf } from "../lib/mediaKind";
 import { formatSeconds, formatTime } from "../lib/ringtoneDisplay";
 
 const props = defineProps<{
   file: File;
   target: TargetFormat | undefined;
+  // The file is a playable copy of a GIF, kept whole by default
+  animatedSource?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "change", clip: Clip | null): void;
   (e: "length", seconds: number | null): void;
+  (e: "frame", time: number): void;
 }>();
 
 const isVideo = computed(() => mediaKindOf(props.file) === "video");
+// A still image takes one moment, so the selection gives way to the playhead
+const isFrame = computed(() => isStillImage(props.target));
 
 const {
   mediaUrl,
   duration,
   previewFailed,
   isPlaying,
+  playhead,
   range,
   limits,
   length,
@@ -49,8 +55,10 @@ const {
   () => props.file,
   () => props.target,
   () => isVideo.value,
+  () => props.animatedSource === true,
   (clip) => emit("change", clip),
   (seconds) => emit("length", seconds),
+  (time) => emit("frame", time),
 );
 </script>
 
@@ -109,41 +117,43 @@ const {
             draggable="false"
           />
         </div>
-        <div class="trim-shade trim-shade-start"></div>
-        <div class="trim-shade trim-shade-end"></div>
+        <template v-if="!isFrame">
+          <div class="trim-shade trim-shade-start"></div>
+          <div class="trim-shade trim-shade-end"></div>
 
-        <div
-          class="trim-window"
-          :class="{ 'trim-window-active': activeGrip === 'window' }"
-          @pointerdown.stop="startDrag('window', $event)"
-        >
           <div
-            class="trim-handle trim-handle-start"
-            :class="{ 'trim-handle-active': activeGrip === 'start' }"
-            role="slider"
-            tabindex="0"
-            aria-label="Trim start"
-            :aria-valuemin="0"
-            :aria-valuemax="duration"
-            :aria-valuenow="range.start"
-            :aria-valuetext="formatTime(range.start)"
-            @pointerdown.stop="startDrag('start', $event)"
-            @keydown="handleKeydown('start', $event)"
-          ></div>
-          <div
-            class="trim-handle trim-handle-end"
-            :class="{ 'trim-handle-active': activeGrip === 'end' }"
-            role="slider"
-            tabindex="0"
-            aria-label="Trim end"
-            :aria-valuemin="0"
-            :aria-valuemax="duration"
-            :aria-valuenow="range.end"
-            :aria-valuetext="formatTime(range.end)"
-            @pointerdown.stop="startDrag('end', $event)"
-            @keydown="handleKeydown('end', $event)"
-          ></div>
-        </div>
+            class="trim-window"
+            :class="{ 'trim-window-active': activeGrip === 'window' }"
+            @pointerdown.stop="startDrag('window', $event)"
+          >
+            <div
+              class="trim-handle trim-handle-start"
+              :class="{ 'trim-handle-active': activeGrip === 'start' }"
+              role="slider"
+              tabindex="0"
+              aria-label="Trim start"
+              :aria-valuemin="0"
+              :aria-valuemax="duration"
+              :aria-valuenow="range.start"
+              :aria-valuetext="formatTime(range.start)"
+              @pointerdown.stop="startDrag('start', $event)"
+              @keydown="handleKeydown('start', $event)"
+            ></div>
+            <div
+              class="trim-handle trim-handle-end"
+              :class="{ 'trim-handle-active': activeGrip === 'end' }"
+              role="slider"
+              tabindex="0"
+              aria-label="Trim end"
+              :aria-valuemin="0"
+              :aria-valuemax="duration"
+              :aria-valuenow="range.end"
+              :aria-valuetext="formatTime(range.end)"
+              @pointerdown.stop="startDrag('end', $event)"
+              @keydown="handleKeydown('end', $event)"
+            ></div>
+          </div>
+        </template>
 
         <!-- Sits above the selection, so it scrubs even inside it -->
         <div
@@ -154,7 +164,11 @@ const {
         ></div>
       </div>
 
-      <div class="trim-times">
+      <p v-if="isFrame" class="trim-frame-time">
+        Frame at {{ formatTime(playhead) }}
+      </p>
+
+      <div v-else class="trim-times">
         <span class="trim-time">{{ formatTime(range.start) }}</span>
         <div class="trim-center">
           <button

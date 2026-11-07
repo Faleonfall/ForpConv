@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   acceptFor,
-  convertDownloadCopy,
+  CONVERT_DOWNLOAD_COPY,
   hashForMode,
   modeFromHash,
   modeIndex,
   slideDirection,
   uploadTitle,
 } from "../appMode";
-import { findTarget } from "../formatCatalog";
 
 describe("modeFromHash and hashForMode", () => {
   it("round trips both modes", () => {
@@ -43,10 +42,8 @@ describe("upload labels", () => {
   });
 });
 
-describe("convertDownloadCopy", () => {
-  it("names the output format", () => {
-    expect(convertDownloadCopy(findTarget("webp")!).text).toBe(
-      "The WEBP file is ready to download.",
-    );
+describe("CONVERT_DOWNLOAD_COPY", () => {
+  it("leaves the line under the heading out", () => {
+    expect(CONVERT_DOWNLOAD_COPY.text).toBeUndefined();
   });
 });
