@@ -40,9 +40,15 @@ vi.mock("wavesurfer.js/dist/plugins/regions.js", () => ({
 
 const song = new File(["x"], "song.mp3", { type: "audio/mpeg" });
 
-// Renders the app, waits for the engine, picks a file and decodes it
+// Convert is the main tab, the ringtone maker opens from its hash
+function renderRingtone() {
+  history.replaceState(null, "", "/#ringtone");
+  return render(App);
+}
+
+// Renders the ringtone maker, waits for the engine, picks a file and decodes it
 async function openTrimmer(user: ReturnType<typeof userEvent.setup>) {
-  const result = render(App);
+  const result = renderRingtone();
   await screen.findByText("Drop your audio or video file here");
   await user.upload(
     result.container.querySelector<HTMLInputElement>('input[type="file"]')!,
@@ -152,7 +158,7 @@ describe("App ringtone conversion", () => {
 
   it("keeps an unsupported file out of the trimmer", async () => {
     const user = userEvent.setup({ applyAccept: false });
-    const { container } = render(App);
+    const { container } = renderRingtone();
     await screen.findByText("Drop your audio or video file here");
 
     await user.upload(
@@ -170,8 +176,7 @@ describe("App format conversion", () => {
   it("turns a video into a GIF from the Convert tab", async () => {
     const user = userEvent.setup({ applyAccept: false });
     const { container } = render(App);
-    await user.click(await screen.findByRole("tab", { name: "Convert" }));
-    expect(window.location.hash).toBe("#convert");
+    await screen.findByText("Drop your audio, video or image file here");
 
     await user.upload(
       container.querySelector<HTMLInputElement>('input[type="file"]')!,
@@ -202,34 +207,38 @@ describe("App format conversion", () => {
   it("swaps the upload when switching tabs back and forth", async () => {
     const user = userEvent.setup();
     render(App);
-    await screen.findByText("Drop your audio or video file here");
-
-    await user.click(screen.getByRole("tab", { name: "Convert" }));
-    expect(
-      await screen.findByText("Drop your audio, video or image file here"),
-    ).toBeInTheDocument();
-    expect(await screen.findByText("File Format Converter")).toBeVisible();
+    await screen.findByText("Drop your audio, video or image file here");
+    expect(screen.getByRole("tab", { name: "Convert" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
 
     await user.click(screen.getByRole("tab", { name: "Ringtone" }));
     expect(
       await screen.findByText("Drop your audio or video file here"),
     ).toBeInTheDocument();
+    expect(await screen.findByText("iPhone M4R Ringtone Maker")).toBeVisible();
+    expect(window.location.hash).toBe("#ringtone");
+
+    await user.click(screen.getByRole("tab", { name: "Convert" }));
+    expect(
+      await screen.findByText("Drop your audio, video or image file here"),
+    ).toBeInTheDocument();
     await vi.waitFor(() =>
       expect(
-        screen.queryByText("Drop your audio, video or image file here"),
+        screen.queryByText("Drop your audio or video file here"),
       ).not.toBeInTheDocument(),
     );
     expect(window.location.hash).toBe("");
   });
 
-  it("opens on the converter from a link with its hash", async () => {
-    history.replaceState(null, "", "/#convert");
-    render(App);
+  it("opens on the ringtone maker from a link with its hash", async () => {
+    renderRingtone();
 
     expect(
-      await screen.findByText("Drop your audio, video or image file here"),
+      await screen.findByText("Drop your audio or video file here"),
     ).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Convert" })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: "Ringtone" })).toHaveAttribute(
       "aria-selected",
       "true",
     );
@@ -237,7 +246,7 @@ describe("App format conversion", () => {
 
   it("keeps the ringtone maker free of pictures", async () => {
     const user = userEvent.setup({ applyAccept: false });
-    const { container } = render(App);
+    const { container } = renderRingtone();
     await screen.findByText("Drop your audio or video file here");
 
     await user.upload(

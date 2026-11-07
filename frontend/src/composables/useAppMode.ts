@@ -11,8 +11,11 @@ import {
 export function useAppMode() {
   const mode = ref<AppMode>(modeFromHash(window.location.hash));
   const direction = ref<SlideDirection>("forward");
+  // Content slams in on first load, after a tab switch it only slides
+  const hasSwitched = ref(false);
 
   const applyMode = (next: AppMode): void => {
+    if (next !== mode.value) hasSwitched.value = true;
     direction.value = slideDirection(mode.value, next);
     mode.value = next;
   };
@@ -35,5 +38,5 @@ export function useAppMode() {
     window.removeEventListener("hashchange", syncFromHash);
   });
 
-  return { mode, direction, setMode };
+  return { mode, direction, hasSwitched, setMode };
 }

@@ -1,10 +1,29 @@
 import { type MediaKind } from "./mediaKind";
 
-const AUDIO_BITRATES: QualityOption[] = [128, 192, 256, 320].map((kbps) => ({
-  id: `${kbps}k`,
-  label: `${kbps} kbps`,
-  args: ["-b:a", `${kbps}k`],
-}));
+const bitrateOptions = (kbps: number[]): QualityOption[] =>
+  kbps.map((rate) => ({
+    id: `${rate}k`,
+    label: `${rate} kbps`,
+    args: ["-b:a", `${rate}k`],
+  }));
+
+const AUDIO_BITRATES = bitrateOptions([128, 192, 256, 320]);
+// Opus sounds clear well below the MP3 rates
+const OPUS_BITRATES = bitrateOptions([96, 128, 192, 256]);
+
+// libopus in ffmpeg.wasm crashes the engine on stereo audio, so Opus comes
+// from FFmpeg's own encoder, still marked experimental
+const OPUS_AUDIO_ARGS = ["-c:a", "opus", "-strict", "-2"];
+
+// libvorbis rejects a fixed bitrate past what the channels and sample rate
+// allow, eg any rate on 22 kHz mono, so Vorbis takes its quality scale.
+// The labels give the rate each step lands near on stereo 44.1 kHz.
+const VORBIS_QUALITIES: QualityOption[] = [
+  { id: "q4", label: "About 128 kbps", args: ["-q:a", "4"] },
+  { id: "q6", label: "About 192 kbps", args: ["-q:a", "6"] },
+  { id: "q8", label: "About 256 kbps", args: ["-q:a", "8"] },
+  { id: "q9", label: "About 320 kbps", args: ["-q:a", "9"] },
+];
 
 // Single image output through the image2 muxer needs update to skip the
 // numbered file pattern
@@ -81,8 +100,8 @@ export const AUDIO_TARGETS: TargetFormat[] = [
     mime: "audio/ogg",
     kind: "audio",
     codecArgs: ["-vn", "-c:a", "libvorbis"],
-    qualities: AUDIO_BITRATES,
-    defaultQualityId: "320k",
+    qualities: VORBIS_QUALITIES,
+    defaultQualityId: "q9",
   },
   {
     id: "opus",
@@ -90,9 +109,9 @@ export const AUDIO_TARGETS: TargetFormat[] = [
     extension: "opus",
     mime: "audio/ogg",
     kind: "audio",
-    codecArgs: ["-vn", "-c:a", "libopus"],
-    qualities: AUDIO_BITRATES,
-    defaultQualityId: "320k",
+    codecArgs: ["-vn", ...OPUS_AUDIO_ARGS],
+    qualities: OPUS_BITRATES,
+    defaultQualityId: "256k",
   },
   {
     id: "flac",
@@ -134,6 +153,8 @@ export const VIDEO_TARGETS: TargetFormat[] = [
     extension: "webm",
     mime: "video/webm",
     kind: "video",
+    // A GIF decodes with alpha, which libvpx refuses next to its alt-ref
+    // frames, so the frames go opaque like every other video target
     codecArgs: [
       "-c:v",
       "libvpx",
@@ -141,8 +162,9 @@ export const VIDEO_TARGETS: TargetFormat[] = [
       "realtime",
       "-cpu-used",
       "8",
-      "-c:a",
-      "libopus",
+      "-pix_fmt",
+      "yuv420p",
+      ...OPUS_AUDIO_ARGS,
       "-b:a",
       "128k",
     ],
@@ -217,7 +239,9 @@ export const IMAGE_TARGETS: TargetFormat[] = [
     extension: "jpg",
     mime: "image/jpeg",
     kind: "image",
-    codecArgs: [...SINGLE_IMAGE_ARGS, "-c:v", "mjpeg"],
+    // The optimal Huffman pass faults or hangs the wasm core on some frames,
+    // the standard tables cost a few percent of size
+    codecArgs: [...SINGLE_IMAGE_ARGS, "-c:v", "mjpeg", "-huffman", "default"],
     // mjpeg q runs from 2 best to 31 worst
     qualities: imageQualities(["10", "5", "2"]),
     defaultQualityId: "high",
@@ -249,7 +273,9 @@ export const IMAGE_TARGETS: TargetFormat[] = [
     extension: "tiff",
     mime: "image/tiff",
     kind: "image",
-    codecArgs: [...SINGLE_IMAGE_ARGS, "-c:v", "tiff"],
+    // A YUV source would stay YUV, which TIFF readers reject on odd heights.
+    // RGBA reads everywhere and keeps transparency.
+    codecArgs: [...SINGLE_IMAGE_ARGS, "-c:v", "tiff", "-pix_fmt", "rgba"],
     qualities: [],
     defaultQualityId: "",
   },

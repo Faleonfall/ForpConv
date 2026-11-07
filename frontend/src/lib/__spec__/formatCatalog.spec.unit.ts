@@ -94,6 +94,35 @@ describe("findTarget and findQuality", () => {
     expect(findTarget("nope")).toBeUndefined();
   });
 
+  it("keeps libopus out, it crashes the engine on stereo audio", () => {
+    for (const id of ["opus", "webm"]) {
+      const args = findTarget(id)!.codecArgs;
+
+      expect(args).not.toContain("libopus");
+      expect(args).toEqual(
+        expect.arrayContaining(["-c:a", "opus", "-strict", "-2"]),
+      );
+    }
+    expect(findTarget("opus")?.defaultQualityId).toBe("256k");
+  });
+
+  it("asks Vorbis for a quality, a fixed rate fails on low rate audio", () => {
+    const ogg = findTarget("ogg")!;
+
+    expect(ogg.qualities.every((quality) => quality.args[0] === "-q:a")).toBe(
+      true,
+    );
+    expect(findQuality(ogg, ogg.defaultQualityId)?.label).toBe(
+      "About 320 kbps",
+    );
+  });
+
+  it("turns WebM frames opaque, libvpx refuses a GIF's alpha", () => {
+    const args = findTarget("webm")!.codecArgs;
+
+    expect(args[args.indexOf("-pix_fmt") + 1]).toBe("yuv420p");
+  });
+
   it("gives every target a default that exists", () => {
     for (const target of [
       ...targetsFor("audio"),

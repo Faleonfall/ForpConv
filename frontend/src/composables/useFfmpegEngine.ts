@@ -22,6 +22,10 @@ import {
   readStreams,
   type StreamInfo,
 } from "../lib/streamProbe";
+import { FfmpegExitError } from "../lib/ffmpegExitError";
+
+const LOAD_FAILED_STATUS =
+  "Failed to load processing engine. Check the connection and try again.";
 
 export interface EngineJob {
   input: Blob;
@@ -96,8 +100,22 @@ export function useFfmpegEngine() {
     } catch (error) {
       console.error("Failed to load FFmpeg.wasm:", error);
       loadFailed.value = true;
-      loadStatus.value =
-        "Failed to load processing engine. Check the connection and try again.";
+      loadStatus.value = LOAD_FAILED_STATUS;
+    }
+  };
+
+  // A wasm fault leaves the core broken for every later job, so a fresh one
+  // replaces it before the failed job reports back. The log listener stays
+  // on the instance across the swap.
+  const restartCore = async (): Promise<void> => {
+    ffmpeg.terminate();
+    try {
+      await loadFfmpegCore(ffmpeg);
+    } catch (error) {
+      console.error("Failed to restart FFmpeg.wasm:", error);
+      isReady.value = false;
+      loadFailed.value = true;
+      loadStatus.value = LOAD_FAILED_STATUS;
     }
   };
 
@@ -114,26 +132,35 @@ export function useFfmpegEngine() {
   // has a track with actual sound and how many frames a second it plays
   const probeStreams = async (file: File): Promise<StreamInfo> => {
     probeLines = [];
+    let crashed = false;
     try {
       await ffmpeg.createDir(PROBE_DIR);
       // The enum lives in the runtime package, its value is the plain name
       await ffmpeg.mount("WORKERFS" as FFFSType, { files: [file] }, PROBE_DIR);
-      // Exits nonzero without an audio track, the log still lists the streams
-      await ffmpeg.exec(probeArgs(file.name));
+      // Exits nonzero without an audio track, the log still lists the
+      // streams. It resolves on any exit, so a rejection is a wasm fault.
+      await ffmpeg.exec(probeArgs(file.name)).catch((error: unknown) => {
+        crashed = true;
+        throw error;
+      });
       return readStreams(probeLines);
     } catch (error) {
       console.error("Stream probe failed:", error);
       return UNKNOWN_STREAMS;
     } finally {
       probeLines = null;
-      await ffmpeg.unmount(PROBE_DIR).catch(() => false);
-      await ffmpeg.deleteDir(PROBE_DIR).catch(() => false);
+      if (crashed) {
+        await restartCore();
+      } else {
+        await ffmpeg.unmount(PROBE_DIR).catch(() => false);
+        await ffmpeg.deleteDir(PROBE_DIR).catch(() => false);
+      }
     }
   };
 
   // Writes the input to the in-memory filesystem, runs FFmpeg and reads the
   // output back as a blob, removing both files either way
-  const run = async (job: EngineJob): Promise<Blob> => {
+  const runJob = async (job: EngineJob): Promise<Blob> => {
     progress.value = 0;
     progressLabel = job.progressLabel;
     status.value = "Uploading file to virtual memory...";
@@ -146,7 +173,7 @@ export function useFfmpegEngine() {
       startedAt = performance.now();
       const exitCode = await ffmpeg.exec(job.args);
       tracker = null;
-      if (exitCode !== 0) throw new Error(`FFmpeg exited with ${exitCode}`);
+      if (exitCode !== 0) throw new FfmpegExitError(exitCode);
 
       progress.value = 100;
       status.value = "Finalizing file...";
@@ -163,6 +190,16 @@ export function useFfmpegEngine() {
         ffmpeg.deleteFile(job.inputName),
         ffmpeg.deleteFile(job.outputName),
       ]);
+    }
+  };
+
+  // The job still fails after a fault, the next one gets a working core
+  const run = async (job: EngineJob): Promise<Blob> => {
+    try {
+      return await runJob(job);
+    } catch (error) {
+      if (!(error instanceof FfmpegExitError)) await restartCore();
+      throw error;
     }
   };
 

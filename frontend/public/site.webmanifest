@@ -1,7 +1,7 @@
 {
   "name": "forpConv",
   "short_name": "forpConv",
-  "description": "Trim and convert audio or video files into M4R iPhone ringtones.",
+  "description": "Convert audio, video, and images between formats and make M4R iPhone ringtones.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

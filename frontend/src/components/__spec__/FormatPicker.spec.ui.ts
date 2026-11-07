@@ -206,7 +206,7 @@ describe("FormatPicker options", () => {
     await choose(user, "Quality", "128 kbps");
     await choose(user, "Convert To", "Opus");
 
-    expect(pickedIn("Quality")).toBe("320 kbps");
+    expect(pickedIn("Quality")).toBe("256 kbps");
   });
 
   it("leaves an audio pick once the video turns out silent", async () => {

@@ -1,7 +1,7 @@
 import { kindListLabel } from "./fileValidation";
 import { type MediaKind } from "./mediaKind";
 
-const CONVERT_HASH = "#convert";
+const RINGTONE_HASH = "#ringtone";
 
 const UPLOAD_BADGE_LABELS: Record<MediaKind, string> = {
   audio: "Audio (MP3, M4A, WAV, FLAC)",
@@ -60,7 +60,8 @@ export const MODE_COPY: Record<AppMode, ModeCopy> = {
   },
 };
 
-export const APP_MODES: AppMode[] = ["ringtone", "convert"];
+// Convert is the main tab and the bare address
+export const APP_MODES: AppMode[] = ["convert", "ringtone"];
 
 export const RINGTONE_DOWNLOAD_COPY: DownloadCopy = {
   heading: "Ringtone Created!",
@@ -85,11 +86,11 @@ export function slideDirection(from: AppMode, to: AppMode): SlideDirection {
 }
 
 export function modeFromHash(hash: string): AppMode {
-  return hash === CONVERT_HASH ? "convert" : "ringtone";
+  return hash === RINGTONE_HASH ? "ringtone" : "convert";
 }
 
 export function hashForMode(mode: AppMode): string {
-  return mode === "convert" ? CONVERT_HASH : "";
+  return mode === "ringtone" ? RINGTONE_HASH : "";
 }
 
 export function uploadTitle(kinds: MediaKind[]): string {

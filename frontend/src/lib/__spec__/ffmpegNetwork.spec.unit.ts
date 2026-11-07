@@ -1,15 +1,23 @@
+import { readFileSync, statSync } from "node:fs";
 import { type FFmpeg } from "@ffmpeg/ffmpeg";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { openCoreStore, type CoreStore } from "../devCoreStore";
 import {
   CORE_FILES,
   CORE_TOTAL_BYTES,
   DOWNLOAD_ATTEMPTS,
   FFMPEG_CORE_URL,
+  FFMPEG_CORE_VERSION,
   downloadRatio,
   downloadStatus,
   loadFfmpegCore,
   retryStatus,
 } from "../ffmpegNetwork";
+
+// Cache Storage itself is covered in devCoreStore's own spec
+vi.mock("../devCoreStore", () => ({
+  openCoreStore: vi.fn(() => Promise.resolve(null)),
+}));
 
 // A fetch response that streams the given byte counts as chunks
 function streamedResponse(chunkSizes: number[]) {
@@ -30,8 +38,25 @@ function streamedResponse(chunkSizes: number[]) {
   };
 }
 
+// An engine that starts from whatever it gets
+function loaded(): FFmpeg {
+  return { load: vi.fn(() => Promise.resolve(true)) } as unknown as FFmpeg;
+}
+
+// A dev store that hands back the given blob for every file, or nothing
+function fakeStore(stored: Blob | null) {
+  const store = {
+    read: vi.fn(() => Promise.resolve(stored)),
+    save: vi.fn(),
+    drop: vi.fn(() => Promise.resolve()),
+  } satisfies CoreStore;
+  vi.mocked(openCoreStore).mockResolvedValue(store);
+  return store;
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.mocked(openCoreStore).mockReset().mockResolvedValue(null);
 });
 
 describe("loadFfmpegCore", () => {
@@ -125,6 +150,106 @@ describe("loadFfmpegCore", () => {
     const jsCalls = fetch.mock.calls.filter(([url]) => url.endsWith(".js"));
     expect(jsCalls).toHaveLength(DOWNLOAD_ATTEMPTS);
     expect(load).not.toHaveBeenCalled();
+    // The other file keeps retrying in the background, let it finish so it
+    // can't reach the next test's fetch
+    await vi.waitFor(() =>
+      expect(fetch).toHaveBeenCalledTimes(
+        CORE_FILES.length * DOWNLOAD_ATTEMPTS,
+      ),
+    );
+  });
+});
+
+describe("loadFfmpegCore dev store", () => {
+  it("starts from stored files without downloading", async () => {
+    const store = fakeStore(new Blob(["core"]));
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const onDownload = vi.fn();
+
+    await loadFfmpegCore(loaded(), { onDownload }, { keepInStore: true });
+
+    expect(openCoreStore).toHaveBeenCalledWith(FFMPEG_CORE_VERSION);
+    expect(store.read).toHaveBeenCalledWith(
+      `${FFMPEG_CORE_URL}/ffmpeg-core.wasm`,
+      CORE_FILES[1]!.bytes,
+    );
+    expect(fetch).not.toHaveBeenCalled();
+    expect(store.save).not.toHaveBeenCalled();
+    expect(onDownload).toHaveBeenLastCalledWith(8);
+  });
+
+  it("saves downloaded files for the next reload", async () => {
+    const store = fakeStore(null);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(streamedResponse([4]))),
+    );
+
+    await loadFfmpegCore(loaded(), {}, { keepInStore: true });
+
+    expect(store.save).toHaveBeenCalledWith(
+      `${FFMPEG_CORE_URL}/ffmpeg-core.js`,
+      expect.any(Blob),
+    );
+    expect(store.save).toHaveBeenCalledWith(
+      `${FFMPEG_CORE_URL}/ffmpeg-core.wasm`,
+      expect.any(Blob),
+    );
+  });
+
+  it("drops the store when the engine fails to start", async () => {
+    const store = fakeStore(new Blob(["bad"]));
+    const load = vi.fn(() => Promise.reject(new Error("bad wasm")));
+
+    await expect(
+      loadFfmpegCore({ load } as unknown as FFmpeg, {}, { keepInStore: true }),
+    ).rejects.toThrow("bad wasm");
+
+    expect(store.drop).toHaveBeenCalledOnce();
+  });
+
+  it("leaves the live site to the HTTP cache", async () => {
+    const fetch = vi.fn(() => Promise.resolve(streamedResponse([4])));
+    vi.stubGlobal("fetch", fetch);
+
+    await loadFfmpegCore(loaded(), {}, { keepInStore: false });
+
+    expect(openCoreStore).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("downloads as usual without a store", async () => {
+    vi.mocked(openCoreStore).mockResolvedValue(null);
+    const fetch = vi.fn(() => Promise.resolve(streamedResponse([4])));
+    vi.stubGlobal("fetch", fetch);
+
+    await loadFfmpegCore(loaded(), {}, { keepInStore: true });
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("pinned core", () => {
+  const installed = new URL(
+    "../../../../node_modules/@ffmpeg/core/",
+    import.meta.url,
+  );
+
+  it("follows the installed package version", () => {
+    const pkg = JSON.parse(
+      readFileSync(new URL("package.json", installed), "utf8"),
+    );
+    expect(FFMPEG_CORE_VERSION).toBe(pkg.version);
+  });
+
+  it("knows the real size of each core file", () => {
+    for (const file of CORE_FILES) {
+      expect(
+        statSync(new URL(`dist/esm/${file.name}`, installed)).size,
+        file.name,
+      ).toBe(file.bytes);
+    }
   });
 });
 

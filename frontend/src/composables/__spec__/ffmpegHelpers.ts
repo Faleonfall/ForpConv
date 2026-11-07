@@ -19,6 +19,7 @@ export function createFfmpegFake() {
     mount: vi.fn(() => Promise.resolve(true)),
     unmount: vi.fn(() => Promise.resolve(true)),
     deleteDir: vi.fn(() => Promise.resolve(true)),
+    terminate: vi.fn(),
   };
 
   // Feeds a line as FFmpeg would print it, eg a stats line with time=

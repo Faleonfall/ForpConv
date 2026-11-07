@@ -8,8 +8,8 @@ import {
 import { formatFileSize } from "./ringtoneDisplay";
 
 // Encoders that hold the asked bitrate closely enough to predict the size.
-// Opus drops far below it on quiet audio, WAV depends on the source.
-const STEADY_BITRATE_TARGETS = ["mp3", "m4a", "ogg"];
+// Vorbis follows a quality scale, WAV depends on the source.
+const STEADY_BITRATE_TARGETS = ["mp3", "m4a", "opus"];
 
 // Silent H.264 the browser can play and seek, so a GIF gets a timeline
 export const TIMELINE_NAME = "timeline.mp4";

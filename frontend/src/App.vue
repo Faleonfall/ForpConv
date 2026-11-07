@@ -32,7 +32,7 @@ const ResultDownload = defineAsyncComponent(
 );
 
 const { themeChoice, toggleTheme } = useTheme();
-const { mode, direction, setMode } = useAppMode();
+const { mode, direction, hasSwitched, setMode } = useAppMode();
 
 const engine = useFfmpegEngine();
 const { isReady, loadProgress, loadStatus, loadFailed, progress, status } =
@@ -98,8 +98,8 @@ const handleHome = (): void => {
   <main class="app-main">
     <div v-if="isReady && step === 'upload'" class="app-hero">
       <ModeTabs :mode="mode" @select="setMode" />
-      <Transition :name="`mode-${direction}`" mode="out-in">
-        <div :key="mode">
+      <Transition :name="`mode-${direction}`">
+        <div :key="mode" :class="{ 'mode-switched': hasSwitched }">
           <h1 class="app-hero-title">{{ copy.heroTitle }}</h1>
           <p class="app-hero-subtitle">{{ copy.heroSubtitle }}</p>
         </div>
@@ -125,13 +125,10 @@ const handleHome = (): void => {
     </ProgressPanel>
 
     <!-- Upload File -->
-    <Transition
-      v-else-if="step === 'upload'"
-      :name="`mode-${direction}`"
-      mode="out-in"
-    >
+    <Transition v-else-if="step === 'upload'" :name="`mode-${direction}`">
       <FileUpload
         :key="mode"
+        :class="{ 'mode-switched': hasSwitched }"
         :kinds="copy.kinds"
         :subtitle="copy.uploadSubtitle"
         :rejection="mode === 'ringtone' ? ringtoneUploadError : ''"

@@ -15,17 +15,18 @@ describe("modeFromHash and hashForMode", () => {
     expect(modeFromHash(hashForMode("ringtone"))).toBe("ringtone");
   });
 
-  it("falls back to the ringtone maker", () => {
-    expect(modeFromHash("")).toBe("ringtone");
-    expect(modeFromHash("#other")).toBe("ringtone");
+  it("falls back to the converter on the bare address", () => {
+    expect(hashForMode("convert")).toBe("");
+    expect(modeFromHash("")).toBe("convert");
+    expect(modeFromHash("#other")).toBe("convert");
   });
 });
 
 describe("slideDirection", () => {
   it("follows the tab order", () => {
-    expect(slideDirection("ringtone", "convert")).toBe("forward");
-    expect(slideDirection("convert", "ringtone")).toBe("back");
-    expect(modeIndex("convert")).toBe(1);
+    expect(slideDirection("convert", "ringtone")).toBe("forward");
+    expect(slideDirection("ringtone", "convert")).toBe("back");
+    expect(modeIndex("ringtone")).toBe(1);
   });
 });
 

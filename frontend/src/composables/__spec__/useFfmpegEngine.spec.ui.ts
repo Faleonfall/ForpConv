@@ -192,5 +192,45 @@ describe("useFfmpegEngine run", () => {
     await expect(engine.run(job)).rejects.toThrow("FFmpeg exited with 1");
     expect(fake.ffmpeg.readFile).not.toHaveBeenCalled();
     expect(fake.ffmpeg.deleteFile).toHaveBeenCalledWith("input.wav");
+    expect(fake.ffmpeg.terminate).not.toHaveBeenCalled();
+  });
+});
+
+describe("useFfmpegEngine crash recovery", () => {
+  const fault = new Error("RuntimeError: memory access out of bounds");
+
+  it("swaps in a fresh core after a job faults", async () => {
+    await renderReady();
+    fake.ffmpeg.exec.mockRejectedValueOnce(fault);
+
+    await expect(engine.run(job)).rejects.toBe(fault);
+
+    expect(fake.ffmpeg.terminate).toHaveBeenCalledOnce();
+    expect(fake.ffmpeg.load).toHaveBeenCalledTimes(2);
+    await expect(engine.run(job)).resolves.toBeInstanceOf(Blob);
+  });
+
+  it("swaps in a fresh core after a probe faults", async () => {
+    await renderReady();
+    fake.ffmpeg.exec.mockRejectedValueOnce(fault);
+
+    await expect(
+      engine.probeStreams(new File(["x"], "clip.mp4")),
+    ).resolves.toEqual({ hasAudio: null, frameRate: null });
+
+    expect(fake.ffmpeg.terminate).toHaveBeenCalledOnce();
+    expect(fake.ffmpeg.unmount).not.toHaveBeenCalled();
+    expect(fake.ffmpeg.load).toHaveBeenCalledTimes(2);
+  });
+
+  it("offers a retry when the fresh core fails to load", async () => {
+    await renderReady();
+    fake.ffmpeg.exec.mockRejectedValueOnce(fault);
+    fake.ffmpeg.load.mockRejectedValueOnce(new Error("offline"));
+
+    await expect(engine.run(job)).rejects.toBe(fault);
+
+    expect(engine.loadFailed.value).toBe(true);
+    expect(screen.getByTestId("ready")).toHaveTextContent("false");
   });
 });

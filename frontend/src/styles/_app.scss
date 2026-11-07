@@ -68,27 +68,36 @@
 // Tab switch, the content slides the way the indicator moves. Scoped under
 // app-main so it outranks the card's own transition list, which would
 // otherwise drop the opacity fade.
+// The old content goes at once and the new one slides in on the slab's
+// timing, so nothing waits on a leave phase.
 .app-main {
   .mode-forward-enter-active,
-  .mode-forward-leave-active,
-  .mode-back-enter-active,
-  .mode-back-leave-active {
+  .mode-back-enter-active {
     transition:
-      opacity 0.18s ease,
-      transform 0.18s ease;
+      opacity 0.16s ease,
+      transform 0.26s $snap;
   }
 
-  .mode-forward-enter-from,
-  .mode-back-leave-to {
+  .mode-forward-leave-active,
+  .mode-back-leave-active {
+    display: none;
+  }
+
+  .mode-forward-enter-from {
     opacity: 0;
     transform: translateX(-24px) skewX(8deg);
   }
 
-  .mode-forward-leave-to,
   .mode-back-enter-from {
     opacity: 0;
     transform: translateX(24px) skewX(-8deg);
   }
+}
+
+// The first load slams in, a replay on every switch would trail the slab
+.mode-switched .app-hero-title::after,
+.card.mode-switched {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -98,16 +107,12 @@
 
   .app-main {
     .mode-forward-enter-active,
-    .mode-forward-leave-active,
-    .mode-back-enter-active,
-    .mode-back-leave-active {
-      transition: opacity 0.18s ease;
+    .mode-back-enter-active {
+      transition: opacity 0.16s ease;
     }
 
     .mode-forward-enter-from,
-    .mode-forward-leave-to,
-    .mode-back-enter-from,
-    .mode-back-leave-to {
+    .mode-back-enter-from {
       transform: none;
     }
   }

@@ -1,36 +1,18 @@
 @use "mixins" as *;
 
-$tabs-padding: 4px;
-$tabs-gap: 4px;
-
-// Leaning frame, equal columns let one slab slide between tabs by its index
+// Leaning frame on the shared drop switch, the accent slab is its drop
 .tabs {
-  position: relative;
+  --drop-pad: 4px;
   display: inline-grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: $tabs-gap;
-  padding: $tabs-padding;
   margin-bottom: 24px;
   border: 1.5px solid var(--color-panel-border);
   background: var(--color-inset);
   @include cut-box;
 }
 
-// Accent slab that overshoots a little as it lands on the new tab
 .tabs-indicator {
-  position: absolute;
-  top: $tabs-padding;
-  bottom: $tabs-padding;
-  left: $tabs-padding;
-  width: calc(
-    (100% - #{$tabs-padding * 2} - #{$tabs-gap} * (var(--tab-count) - 1)) /
-      var(--tab-count)
-  );
   background: var(--gradient-accent);
   box-shadow: var(--shadow-button);
-  transform: translateX(calc(var(--tab-index) * (100% + #{$tabs-gap})));
-  transition: transform 0.32s $snap;
 }
 
 .tabs-tab {
@@ -43,7 +25,7 @@ $tabs-gap: 4px;
   font-style: italic;
   cursor: pointer;
   @include cut-face;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
 }
 
 .tabs-tab:hover {
@@ -61,7 +43,6 @@ $tabs-gap: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tabs-indicator,
   .tabs-tab {
     transition: none;
   }

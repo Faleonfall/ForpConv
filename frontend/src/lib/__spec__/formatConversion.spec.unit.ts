@@ -86,6 +86,8 @@ describe("buildConvertArgs", () => {
       "1",
       "-c:v",
       "mjpeg",
+      "-huffman",
+      "default",
       "-q:v",
       "2",
       "output.jpg",
@@ -186,10 +188,11 @@ describe("estimateOutputBytes", () => {
   it("multiplies the bitrate by the length", () => {
     expect(estimateOutputBytes(findTarget("mp3")!, "320k", 30)).toBe(1_200_000);
     expect(estimateOutputBytes(findTarget("m4a")!, "128k", 10)).toBe(160_000);
+    expect(estimateOutputBytes(findTarget("opus")!, "96k", 10)).toBe(120_000);
   });
 
   it("skips formats whose size depends on the content", () => {
-    expect(estimateOutputBytes(findTarget("opus")!, "320k", 30)).toBeNull();
+    expect(estimateOutputBytes(findTarget("ogg")!, "q9", 30)).toBeNull();
     expect(estimateOutputBytes(findTarget("wav")!, "", 30)).toBeNull();
     expect(estimateOutputBytes(findTarget("mp4")!, "high", 30)).toBeNull();
   });

@@ -4,8 +4,12 @@ import { describe, expect, it } from "vitest";
 import ModeTabs from "../ModeTabs.vue";
 
 describe("ModeTabs", () => {
-  it("marks the active tool", () => {
+  it("lists Convert first and marks the active tool", () => {
     render(ModeTabs, { props: { mode: "convert" } });
+
+    expect(
+      screen.getAllByRole("tab").map((tab) => tab.textContent?.trim()),
+    ).toEqual(["Convert", "Ringtone"]);
 
     expect(screen.getByRole("tab", { name: "Convert" })).toHaveAttribute(
       "aria-selected",
@@ -17,17 +21,17 @@ describe("ModeTabs", () => {
     );
   });
 
-  it("moves the indicator to the active tab", async () => {
+  it("moves the drop to the active tab only on a real switch", async () => {
     const { getByRole, rerender } = render(ModeTabs, {
-      props: { mode: "ringtone" },
+      props: { mode: "convert" },
     });
     const tablist = getByRole("tablist");
-    expect(tablist.style.getPropertyValue("--tab-index")).toBe("0");
+    expect(tablist).not.toHaveClass("drop-switch-end");
+    expect(tablist).not.toHaveClass("drop-switch-moved");
 
-    await rerender({ mode: "convert" });
+    await rerender({ mode: "ringtone" });
 
-    expect(tablist.style.getPropertyValue("--tab-index")).toBe("1");
-    expect(tablist.style.getPropertyValue("--tab-count")).toBe("2");
+    expect(tablist).toHaveClass("drop-switch-end", "drop-switch-moved");
   });
 
   it("emits the picked tool", async () => {

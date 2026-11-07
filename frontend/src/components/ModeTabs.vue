@@ -1,18 +1,24 @@
 <script setup lang="ts">
 import { APP_MODES, MODE_COPY, modeIndex, type AppMode } from "../lib/appMode";
+import { useDropSwitch } from "../composables/useDropSwitch";
 
-defineProps<{ mode: AppMode }>();
+const props = defineProps<{ mode: AppMode }>();
 defineEmits<{ select: [mode: AppMode] }>();
+
+const { hasMoved } = useDropSwitch(() => props.mode);
 </script>
 
 <template>
   <div
-    class="tabs"
+    class="drop-switch tabs"
+    :class="{
+      'drop-switch-end': modeIndex(mode) === 1,
+      'drop-switch-moved': hasMoved,
+    }"
     role="tablist"
     aria-label="Tool"
-    :style="{ '--tab-count': APP_MODES.length, '--tab-index': modeIndex(mode) }"
   >
-    <span class="tabs-indicator" aria-hidden="true"></span>
+    <span class="drop-switch-drop tabs-indicator" aria-hidden="true"></span>
     <button
       v-for="option in APP_MODES"
       :key="option"

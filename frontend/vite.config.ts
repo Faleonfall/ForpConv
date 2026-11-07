@@ -1,5 +1,16 @@
+import { readFileSync } from "node:fs";
 import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
+
+// The app fetches the FFmpeg core from unpkg at runtime. Its version comes
+// from the installed package, so npm outdated sees it like any dependency.
+// The package's exports hide its package.json, so it is read from disk.
+const ffmpegCoreVersion: string = JSON.parse(
+  readFileSync(
+    new URL("../node_modules/@ffmpeg/core/package.json", import.meta.url),
+    "utf8",
+  ),
+).version;
 
 // Specs live in __spec__ folders next to the code. The suffix picks the kind
 // by what a spec exercises: unit for one module's logic with nothing rendered,
@@ -7,6 +18,9 @@ import vue from "@vitejs/plugin-vue";
 // that checks real storage or goes deeper than what the ui shows.
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    __FFMPEG_CORE_VERSION__: JSON.stringify(ffmpegCoreVersion),
+  },
   server: {
     port: 3000,
     // Fail on a busy port instead of moving to the next one, so a second
