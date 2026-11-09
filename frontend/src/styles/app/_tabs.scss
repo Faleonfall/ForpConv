@@ -1,0 +1,49 @@
+@use "../mixins" as *;
+
+// Leaning frame on the shared drop switch, the accent slab is its drop
+.tabs {
+  --drop-pad: 4px;
+  display: inline-grid;
+  margin-bottom: 24px;
+  border: 1.5px solid var(--color-panel-border);
+  background: var(--color-inset);
+  @include cut-box;
+}
+
+.tabs-indicator {
+  background: var(--gradient-accent);
+  box-shadow: var(--shadow-button);
+}
+
+.tabs-tab {
+  position: relative;
+  padding: 9px 24px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-soft);
+  @include display-text(1rem, 700);
+  font-style: italic;
+  cursor: pointer;
+  @include cut-face;
+  transition: color 0.15s ease;
+}
+
+.tabs-tab:hover {
+  color: var(--color-text);
+}
+
+.tabs-tab-active,
+.tabs-tab-active:hover {
+  color: var(--color-on-accent);
+}
+
+.tabs-tab:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabs-tab {
+    transition: none;
+  }
+}

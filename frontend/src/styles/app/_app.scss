@@ -1,0 +1,131 @@
+@use "../mixins" as *;
+
+.app-main {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 16px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+// Pairs with the footer's auto margin so the free space splits above the
+// content and above the footer, keeping the card centered
+.app-main > :first-child {
+  margin-top: auto;
+}
+
+.app-hero {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+// Heavy italic headline underlined by a slab that slams in after it
+.app-hero-title {
+  @include display-text(2.5rem, 800);
+  display: inline-block;
+  position: relative;
+  margin-bottom: 18px;
+  padding: 0 6px;
+  font-style: italic;
+  letter-spacing: -0.5px;
+}
+
+.app-hero-title::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -8px;
+  height: 6px;
+  background: var(--gradient-accent);
+  transform: skewX($cut);
+  transform-origin: left;
+  animation: hero-bar 0.42s 0.12s $slam both;
+}
+
+.app-hero-subtitle {
+  color: var(--color-text-soft);
+  font-size: 1.05rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+@keyframes hero-bar {
+  from {
+    transform: skewX($cut) scaleX(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .app-hero-title {
+    font-size: 1.9rem;
+  }
+}
+
+// Tab switch, the content slides the way the indicator moves. Scoped under
+// app-main so it outranks the card's own transition list, which would
+// otherwise drop the opacity fade.
+// The old content goes at once and the new one slides in on the slab's
+// timing, so nothing waits on a leave phase.
+.app-main {
+  .mode-forward-enter-active,
+  .mode-back-enter-active {
+    transition:
+      opacity 0.16s ease,
+      transform 0.26s $snap;
+  }
+
+  .mode-forward-leave-active,
+  .mode-back-leave-active {
+    display: none;
+  }
+
+  .mode-forward-enter-from {
+    opacity: 0;
+    transform: translateX(-24px) skewX(8deg);
+  }
+
+  .mode-back-enter-from {
+    opacity: 0;
+    transform: translateX(24px) skewX(-8deg);
+  }
+}
+
+// The first load slams in, a replay on every switch would trail the slab
+.mode-switched .app-hero-title::after,
+.card.mode-switched {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-hero-title::after {
+    animation: none;
+  }
+
+  .app-main {
+    .mode-forward-enter-active,
+    .mode-back-enter-active {
+      transition: opacity 0.16s ease;
+    }
+
+    .mode-forward-enter-from,
+    .mode-back-enter-from {
+      transform: none;
+    }
+  }
+}
+
+@media (max-height: 850px) {
+  .app-main {
+    padding: 16px;
+  }
+}
+
+@media (max-height: 700px) {
+  .app-main {
+    padding: 8px;
+  }
+}

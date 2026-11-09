@@ -1,0 +1,141 @@
+@use "../mixins" as *;
+
+$bar-height: 18px;
+// Square tile holding two 45° stripe periods, so tiles meet without a seam
+$stripe-tile: 22.63px;
+
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 32px;
+}
+
+// Big italic count above the bar
+.progress-value {
+  @include display-text(3.25rem, 800);
+  font-style: italic;
+  line-height: 1;
+  margin-bottom: 14px;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+  padding-right: 6px;
+}
+
+.progress-value span {
+  font-size: 0.5em;
+}
+
+// Leaning ink track, the fill runs diagonal stripes while work goes on
+.progress-bar {
+  position: relative;
+  width: min(100%, 420px);
+  height: $bar-height;
+  margin-bottom: 24px;
+  overflow: hidden;
+  @include slab(5px);
+  @include cut-box;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 8px,
+      var(--color-stripe) 8px 16px
+    ),
+    var(--gradient-accent);
+  background-size:
+    $stripe-tile $stripe-tile,
+    100% 100%;
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  animation: progress-stripes 0.6s linear infinite;
+}
+
+// A failed run turns the track itself into one thin red line. A red fill
+// over the ink track would leave hairline seams along the leaning edges.
+.progress-failed .progress-bar {
+  height: 6px;
+  margin-top: 6px;
+  margin-bottom: 30px;
+  border-left: none;
+  background: var(--color-danger);
+  animation: progress-fail-sweep 0.3s ease;
+  transform-origin: left;
+}
+
+.progress-failed .progress-bar-fill {
+  display: none;
+}
+
+// Warning sign on a danger slab in place of the count, it stamps in
+.progress-alert {
+  @include flex-center;
+  width: 78px;
+  height: 64px;
+  margin-bottom: 18px;
+  @include status-slab(danger);
+  @include cut-box;
+  animation: progress-stamp 0.4s $slam;
+}
+
+.progress-alert > svg {
+  @include cut-face;
+}
+
+.progress-title {
+  @include display-text(1.35rem, 800);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.progress-text {
+  color: var(--color-text-soft);
+  font-size: 0.9rem;
+  max-width: 440px;
+  // Digits keep one width, so the line doesn't jitter as the clock ticks
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+}
+
+.progress-retry {
+  margin-top: 20px;
+}
+
+@keyframes progress-fail-sweep {
+  from {
+    transform: skewX($cut) scaleX(0);
+  }
+}
+
+@keyframes progress-stamp {
+  from {
+    opacity: 0;
+    transform: skewX(-24deg) scale(1.6);
+  }
+}
+
+@keyframes progress-stripes {
+  to {
+    background-position:
+      $stripe-tile 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar-fill,
+  .progress-alert,
+  .progress-failed .progress-bar {
+    animation: none;
+    transition: none;
+  }
+}

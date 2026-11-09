@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/vue";
+import { fireEvent, render, screen, waitFor } from "@testing-library/vue";
 import userEvent from "@testing-library/user-event";
 import { nextTick } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -6,16 +6,19 @@ import App from "../App.vue";
 import {
   createWaveSurferFake,
   type WaveSurferFake,
-} from "../components/__spec__/waveSurferHelpers";
+} from "../components/ringtone/__spec__/waveSurferHelpers";
 import {
   createFfmpegFake,
   stubCoreFetch,
   type FfmpegFake,
-} from "../composables/__spec__/ffmpegHelpers";
-import { findTarget } from "../lib/formatCatalog";
-import { buildConvertArgs } from "../lib/formatConversion";
-import { OUTPUT_FILE_NAME, buildFfmpegArgs } from "../lib/ringtoneConversion";
-import { THEME_STORAGE_KEY } from "../lib/themeStorage";
+} from "../composables/engine/__spec__/ffmpegHelpers";
+import { findTarget } from "../lib/convert/formatCatalog";
+import { buildConvertArgs } from "../lib/convert/formatConversion";
+import {
+  OUTPUT_FILE_NAME,
+  buildFfmpegArgs,
+} from "../lib/ringtone/ringtoneConversion";
+import { THEME_STORAGE_KEY } from "../lib/app/themeStorage";
 
 let ffmpegFake: FfmpegFake;
 let waveFake: WaveSurferFake;
@@ -186,6 +189,9 @@ describe("App format conversion", () => {
       await screen.findByRole("button", { name: /^Convert To: / }),
     );
     await user.click(screen.getByRole("option", { name: "GIF (animated)" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument(),
+    );
     await user.click(screen.getByRole("button", { name: /^Convert$/ }));
 
     expect(await screen.findByText("File Converted!")).toBeInTheDocument();

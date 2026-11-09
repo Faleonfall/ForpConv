@@ -1,0 +1,271 @@
+@use "../mixins" as *;
+
+$trim-height: 56px;
+$trim-handle: 14px;
+$trim-border: 3px;
+
+.clip {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clip-preview {
+  @include flex-center;
+}
+
+.clip-video {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-panel-border);
+  background: var(--color-media);
+}
+
+// Timeline track. Handles hang outside the selection, so the track keeps a
+// handle's width of room on both sides.
+.trim-track {
+  position: relative;
+  height: $trim-height;
+  margin: 4px $trim-handle;
+  border-radius: var(--radius-sm);
+  background: var(--color-inset);
+  touch-action: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+.trim-filmstrip {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.trim-frame {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.trim-shade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--color-scrim);
+  pointer-events: none;
+}
+
+.trim-shade-start {
+  left: 0;
+  width: var(--trim-start);
+  border-radius: 2px 0 0 2px;
+}
+
+.trim-shade-end {
+  left: var(--trim-end);
+  right: 0;
+  border-radius: 0 2px 2px 0;
+}
+
+// The kept part, framed like a clip in an editor, drag it to slide
+.trim-window {
+  position: absolute;
+  top: -$trim-border;
+  bottom: -$trim-border;
+  left: var(--trim-start);
+  width: calc(var(--trim-end) - var(--trim-start));
+  border-top: $trim-border solid var(--color-accent);
+  border-bottom: $trim-border solid var(--color-accent);
+  cursor: grab;
+}
+
+.trim-window-active,
+.trim-track-dragging .trim-window {
+  cursor: grabbing;
+}
+
+.trim-handle {
+  position: absolute;
+  top: -$trim-border;
+  bottom: -$trim-border;
+  z-index: 2;
+  width: $trim-handle;
+  @include flex-center;
+  background: var(--color-accent);
+  cursor: ew-resize;
+  transition: background 0.15s ease;
+}
+
+// Grip line in the middle of each handle
+.trim-handle::after {
+  content: "";
+  width: 2px;
+  height: 18px;
+  border-radius: 1px;
+  background: var(--color-on-accent);
+  opacity: 0.8;
+}
+
+.trim-handle-start {
+  right: 100%;
+  border-radius: 2px 0 0 2px;
+}
+
+.trim-handle-end {
+  left: 100%;
+  border-radius: 0 2px 2px 0;
+}
+
+.trim-handle:hover,
+.trim-handle:focus-visible,
+.trim-handle-active {
+  background: var(--color-accent-strong);
+}
+
+.trim-handle:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+// Above the selection so it can be grabbed inside it, below the handles so
+// they win where both meet
+.trim-playhead {
+  position: absolute;
+  z-index: 1;
+  top: -6px;
+  bottom: -6px;
+  left: var(--trim-playhead);
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--color-text);
+  box-shadow: 0 0 4px var(--color-drop-shadow);
+  cursor: ew-resize;
+}
+
+// Wider invisible grab area than the 2px line
+.trim-playhead::before {
+  content: "";
+  position: absolute;
+  inset: 0 -6px;
+}
+
+// Knob on top marks it as something to drag
+.trim-playhead::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--color-text);
+  transform: skewX($cut);
+  transition: transform 0.15s $snap;
+}
+
+.trim-playhead:hover::after,
+.trim-playhead-active::after {
+  transform: skewX($cut) scale(1.4);
+}
+
+.trim-times {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.trim-time {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.trim-time-end {
+  text-align: right;
+}
+
+.trim-center {
+  @include icon-label(8px);
+}
+
+.trim-play {
+  @include flex-center;
+  width: 36px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: var(--gradient-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+  @include cut-box;
+  transition: transform 0.18s $snap;
+}
+
+.trim-play > * {
+  @include cut-face;
+}
+
+.trim-play:hover {
+  transform: skewX($cut) translateY(-2px);
+}
+
+.trim-play:active {
+  transform: skewX($cut) scale(0.9);
+}
+
+.trim-frame-time {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.trim-length {
+  padding: 2px 12px 2px 8px;
+  @include slab(3px);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+  @include cut-box;
+}
+
+.clip-hint,
+.clip-note {
+  @include icon-label(10px);
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
+// Same slab as the upload error, in the warning color
+.clip-hint {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 18px 10px 14px;
+  @include status-slab(warning);
+  font-weight: 600;
+  @include cut-box;
+}
+
+.clip-hint > * {
+  @include cut-face;
+}
+
+.clip-hint > svg {
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trim-handle,
+  .trim-playhead::after,
+  .trim-play {
+    transition: none;
+  }
+}

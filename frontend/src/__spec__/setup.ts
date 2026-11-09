@@ -1,7 +1,11 @@
 import "@testing-library/jest-dom/vitest";
 
 import { cleanup } from "@testing-library/vue";
+import { config } from "@vue/test-utils";
 import { afterEach } from "vitest";
+
+// Real transitions, a select lands its pick only after its panel has left
+config.global.stubs = { transition: false };
 
 // Stand-ins for browser APIs jsdom lacks, each stepping aside once jsdom
 // ships the real thing

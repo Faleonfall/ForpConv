@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#10151d" />
     <!-- Applies the saved theme, else the system one, before first paint.
-         The key matches THEME_STORAGE_KEY in src/lib/themeStorage.ts, and the
+         The key matches THEME_STORAGE_KEY in src/lib/app/themeStorage.ts, and the
          colors match --color-background, which useTheme reads once mounted -->
     <script>
       let theme = null;
@@ -61,7 +61,7 @@
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="forpConv logo and name above a purple audio waveform with a highlighted 30 second trim selection on a dark background."
+      content="forpConv logo and name above the converter card, set to turn a file into an animated GIF at 15 fps and 480 px, with a Convert button on a dark background."
     />
     <meta property="og:site_name" content="forpConv" />
 
@@ -109,7 +109,7 @@
   </head>
   <body>
     <div id="app"></div>
-    <noscript>Enable JavaScript to create ringtones locally.</noscript>
+    <noscript>Enable JavaScript to convert files locally.</noscript>
 
     <!-- Application Entrypoint -->
     <script type="module" src="/src/main.ts"></script>

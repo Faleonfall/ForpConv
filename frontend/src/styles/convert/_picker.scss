@@ -1,0 +1,133 @@
+@use "../mixins" as *;
+
+.picker-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+// Shrinks so a long name ellipsizes instead of pushing the button out
+.picker-file {
+  min-width: 0;
+}
+
+.picker-file-name {
+  @include display-text(1.6rem, 800);
+  font-style: italic;
+  padding-right: 4px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.picker-file-size {
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
+// Sits close above Convert, the card gap alone would leave it floating
+.picker-estimate {
+  margin: -12px 0;
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+  text-align: center;
+}
+
+.picker-header .btn {
+  flex-shrink: 0;
+}
+
+.picker-preview {
+  @include flex-center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker-note {
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
+.picker-image {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-panel-border);
+}
+
+// Select cells side by side in equal shares, stacked on a phone
+.picker-grid {
+  display: flex;
+  gap: 12px;
+}
+
+.picker-grid > * {
+  flex: 1 1 0;
+}
+
+// A new cell grows from nothing while the others give up their share, a
+// dropped one shrinks away. The gap closes with it, so nothing jumps.
+.picker-cell-enter-active,
+.picker-cell-leave-active {
+  overflow: hidden;
+  transition:
+    flex-grow 0.26s $snap,
+    margin-left 0.26s $snap,
+    opacity 0.16s ease;
+}
+
+.picker-cell-enter-from,
+.picker-cell-leave-to {
+  flex-grow: 0;
+  margin-left: -12px;
+  opacity: 0;
+}
+
+// Convert cut at the same angle as the cells, the size switch beside it
+.picker-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.picker-convert {
+  flex: 1;
+}
+
+.picker-convert .btn-face {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 480px) {
+  // Stacked cells keep their own height, a new one only fades in
+  .picker-grid {
+    flex-direction: column;
+  }
+
+  .picker-grid > * {
+    flex: none;
+  }
+
+  .picker-cell-enter-from,
+  .picker-cell-leave-to {
+    margin-left: 0;
+  }
+
+  .quality-switch {
+    width: 150px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker-cell-enter-active,
+  .picker-cell-leave-active {
+    transition: opacity 0.16s ease;
+  }
+}

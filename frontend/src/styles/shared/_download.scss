@@ -1,0 +1,188 @@
+@use "../mixins" as *;
+
+.download-card {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.download-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+// Slab with a green edge, the check stamps in after the card lands
+.download-badge {
+  @include flex-center;
+  width: 72px;
+  height: 60px;
+  @include status-slab(success);
+  @include cut-box;
+  animation: download-stamp 0.42s 0.1s $slam both;
+}
+
+.download-badge > svg {
+  @include cut-face;
+}
+
+.download-title {
+  @include display-text(1.75rem, 800);
+  font-style: italic;
+}
+
+.download-text {
+  color: var(--color-text-soft);
+  font-size: 0.95rem;
+}
+
+.download-details {
+  background: var(--color-inset);
+  border: 1px solid var(--color-panel-border);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.download-file {
+  @include icon-label(16px);
+}
+
+.download-file-icon {
+  @include flex-center;
+  flex-shrink: 0;
+  width: 50px;
+  height: 46px;
+  background: var(--gradient-accent);
+  color: var(--color-on-accent);
+  @include cut-box;
+}
+
+.download-file-icon > svg {
+  @include cut-face;
+}
+
+// Shrinks without clipping, the rename border reaches past its left edge
+.download-file-info {
+  min-width: 0;
+  flex-grow: 1;
+}
+
+// Reads as the file name until hovered or focused, then shows it's editable
+.download-rename {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  margin-left: -6px;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: text;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.download-rename:hover {
+  border-color: var(--color-panel-border);
+}
+
+.download-rename:focus-within {
+  border-color: var(--color-accent);
+  background: var(--color-surface-hover);
+}
+
+.download-name-input {
+  @include display-text(1.1rem);
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  outline: none;
+  text-overflow: ellipsis;
+}
+
+.download-name-extension {
+  @include display-text(1.1rem);
+  flex-shrink: 0;
+  color: var(--color-text-soft);
+}
+
+.download-rename-icon {
+  flex-shrink: 0;
+  margin-left: 6px;
+  color: var(--color-text-soft);
+}
+
+.download-file-size {
+  font-size: 0.85rem;
+  color: var(--color-text-soft);
+}
+
+.download-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.download-preview-label {
+  @include cell-label;
+}
+
+.download-audio {
+  width: 100%;
+  filter: invert(0.9) hue-rotate(180deg);
+}
+
+.download-video,
+.download-image {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  margin: 0 auto;
+  border-radius: var(--radius-sm);
+  background: var(--color-media);
+}
+
+.download-image {
+  object-fit: contain;
+}
+
+.download-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@keyframes download-stamp {
+  from {
+    opacity: 0;
+    transform: skewX(-24deg) scale(1.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-badge {
+    animation: none;
+  }
+}
+
+@media (max-height: 850px) {
+  .download-card {
+    gap: 16px;
+  }
+}
+
+@media (max-height: 700px) {
+  .download-card {
+    gap: 12px;
+  }
+}

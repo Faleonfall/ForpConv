@@ -1,34 +1,31 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, watch } from "vue";
+import { defineAsyncComponent } from "vue";
 import { RotateCcw } from "@lucide/vue";
-import AppHeader from "./components/AppHeader.vue";
-import AppFooter from "./components/AppFooter.vue";
-import ModeTabs from "./components/ModeTabs.vue";
-import ProgressPanel from "./components/ProgressPanel.vue";
+import AppHeader from "./components/app/AppHeader.vue";
+import AppFooter from "./components/app/AppFooter.vue";
+import ModeTabs from "./components/app/ModeTabs.vue";
+import ProgressPanel from "./components/shared/ProgressPanel.vue";
 // Eager, the first screen anyway, and a lazy wrapper would render empty
 // while the tab transition animates it
-import FileUpload from "./components/FileUpload.vue";
-import { useTheme } from "./composables/useTheme";
-import { useAppMode } from "./composables/useAppMode";
-import { useFfmpegEngine } from "./composables/useFfmpegEngine";
-import { useRingtoneConverter } from "./composables/useRingtoneConverter";
-import { useFormatConverter } from "./composables/useFormatConverter";
-import { useLeaveWarning } from "./composables/useLeaveWarning";
+import FileUpload from "./components/shared/FileUpload.vue";
+import { useTheme } from "./composables/app/useTheme";
+import { useAppMode } from "./composables/app/useAppMode";
+import { useFfmpegEngine } from "./composables/engine/useFfmpegEngine";
+import { useAppFlow } from "./composables/app/useAppFlow";
 import {
   CONVERT_DOWNLOAD_COPY,
-  MODE_COPY,
   RINGTONE_DOWNLOAD_COPY,
-} from "./lib/appMode";
-import { ringtoneFileName } from "./lib/ringtoneDisplay";
+  engineTitle,
+} from "./lib/app/appMode";
 
 const RingtoneTrimmer = defineAsyncComponent(
-  () => import("./components/RingtoneTrimmer.vue"),
+  () => import("./components/ringtone/RingtoneTrimmer.vue"),
 );
 const FormatPicker = defineAsyncComponent(
-  () => import("./components/FormatPicker.vue"),
+  () => import("./components/convert/FormatPicker.vue"),
 );
 const ResultDownload = defineAsyncComponent(
-  () => import("./components/ResultDownload.vue"),
+  () => import("./components/shared/ResultDownload.vue"),
 );
 
 const { themeChoice, toggleTheme } = useTheme();
@@ -37,53 +34,32 @@ const { mode, direction, hasSwitched, setMode } = useAppMode();
 const engine = useFfmpegEngine();
 const { isReady, loadProgress, loadStatus, loadFailed, progress, status } =
   engine;
-const ringtone = useRingtoneConverter(engine);
-const converter = useFormatConverter(engine);
-// Either tab past its upload holds a file a reload would drop
-useLeaveWarning(
-  () =>
-    ringtone.currentStep.value !== "upload" ||
-    converter.currentStep.value !== "upload",
-);
-
-const copy = computed(() => MODE_COPY[mode.value]);
-const step = computed(() =>
-  mode.value === "ringtone"
-    ? ringtone.currentStep.value
-    : converter.currentStep.value,
-);
-const ringtoneFile = ringtone.selectedFile;
-const ringtoneBlob = ringtone.generatedRingtoneBlob;
-const ringtoneTitle = ringtone.ringtoneTitle;
-const ringtoneUploadError = ringtone.uploadError;
-const convertFile = converter.selectedFile;
-const convertHasAudio = converter.hasAudio;
-const convertFrameRate = converter.frameRate;
-const convertTimeline = converter.timelineFile;
-const convertPreparingTimeline = converter.isPreparingTimeline;
-const convertedBlob = converter.convertedBlob;
-const convertedTarget = converter.convertedTarget;
-const convertedName = converter.convertedName;
-
-// A rejection belongs to the pick that caused it, not to the next visit
-watch(mode, () => ringtone.clearUploadError());
-
-const activeFlow = () => (mode.value === "ringtone" ? ringtone : converter);
-
-const handleFileSelected = (file: File): void => {
-  void activeFlow().handleFileSelected(file);
-};
-
-const flowFailed = computed(() => activeFlow().failed.value);
-
-// The logo drops the open file and returns to upload, a running conversion
-// can't be stopped halfway so it finishes first
-const handleHome = (): void => {
-  const flow = activeFlow();
-  if (flow.currentStep.value !== "converting" || flow.failed.value) {
-    flow.handleReset();
-  }
-};
+const {
+  ringtone,
+  converter,
+  copy,
+  step,
+  flowFailed,
+  progressTitle,
+  uploadRejection,
+  ringtoneName,
+  handleFileSelected,
+  handleBack,
+  handleHome,
+} = useAppFlow(mode, engine);
+// Template refs unwrap only at the top level
+const { selectedFile: ringtoneFile, generatedRingtoneBlob: ringtoneBlob } =
+  ringtone;
+const {
+  selectedFile: convertFile,
+  hasAudio: convertHasAudio,
+  frameRate: convertFrameRate,
+  timelineFile: convertTimeline,
+  isPreparingTimeline: convertPreparingTimeline,
+  convertedBlob,
+  convertedTarget,
+  convertedName,
+} = converter;
 </script>
 
 <template>
@@ -110,7 +86,7 @@ const handleHome = (): void => {
     <ProgressPanel
       v-if="!isReady"
       :percent="loadProgress"
-      :title="loadFailed ? 'Engine Failed to Load' : 'Initializing Engine'"
+      :title="engineTitle(loadFailed)"
       :text="loadStatus"
       :failed="loadFailed"
     >
@@ -131,7 +107,7 @@ const handleHome = (): void => {
         :class="{ 'mode-switched': hasSwitched }"
         :kinds="copy.kinds"
         :subtitle="copy.uploadSubtitle"
-        :rejection="mode === 'ringtone' ? ringtoneUploadError : ''"
+        :rejection="uploadRejection"
         @file-selected="handleFileSelected"
       />
     </Transition>
@@ -160,7 +136,7 @@ const handleHome = (): void => {
     <ProgressPanel
       v-else-if="step === 'converting'"
       :percent="progress"
-      :title="flowFailed ? copy.failedTitle : copy.progressTitle"
+      :title="progressTitle"
       :text="status"
       :failed="flowFailed"
     >
@@ -168,7 +144,7 @@ const handleHome = (): void => {
         v-if="flowFailed"
         class="btn btn-secondary progress-retry"
         type="button"
-        @click="activeFlow().handleBack()"
+        @click="handleBack"
       >
         <span class="btn-face">{{ copy.backLabel }}</span>
       </button>
@@ -178,7 +154,7 @@ const handleHome = (): void => {
     <ResultDownload
       v-else-if="mode === 'ringtone' && step === 'download' && ringtoneBlob"
       :blob="ringtoneBlob"
-      :file-name="ringtoneFileName(ringtoneTitle)"
+      :file-name="ringtoneName"
       kind="audio"
       :copy="RINGTONE_DOWNLOAD_COPY"
       @reset="ringtone.handleReset"

@@ -13,6 +13,8 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  // Phones paint a box over every tap, the controls show their own press
+  -webkit-tap-highlight-color: transparent;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;

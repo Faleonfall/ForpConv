@@ -8,7 +8,10 @@
     "build": "vue-tsc --noEmit -p frontend/tsconfig.json && vite build frontend",
     "format": "prettier --write .",
     "check": "vue-tsc --noEmit -p frontend/tsconfig.json && eslint .",
-    "test": "vitest run --root frontend"
+    "test": "vitest run --root frontend",
+    "test:unit": "vitest run --root frontend --project unit",
+    "test:ui": "vitest run --root frontend --project ui",
+    "test:int": "vitest run --root frontend --project int"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
@@ -28,6 +31,7 @@
     "@typescript-eslint/eslint-plugin": "^8.71.2",
     "@typescript-eslint/parser": "^8.71.2",
     "@vitejs/plugin-vue": "^6.0.10",
+    "@vue/test-utils": "^2.5.1",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.11.1",
